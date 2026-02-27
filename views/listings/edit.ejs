@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Listing - UrbanBUNK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <h1>UrbanBUNK</h1>
+        <p>Your Urban Escape</p>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/listings">All Listings</a>
+        <% if (currentUser) { %>
+          <a href="/listings/new">Add Listing</a>
+          <a href="/favorites">My Favorites</a>
+          <a href="/logout">Logout</a>
+          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
+        <% } else { %>
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        <% } %>
+      </nav>
+    </header>
+    <div class="container">
+      <div class="heading-box">
+        <h1>Edit Listing</h1>
+      </div>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="listing-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="title">Property Title</label>
+            <input id="title" name="listing[title]" value="<%= listing.title %>" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="price">Price per Night ($)</label>
+            <input id="price" name="listing[price]" value="<%= listing.price %>" type="number" min="0" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="listing[description]" rows="4" required><%= listing.description %></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input id="location" name="listing[location]" value="<%= listing.location %>" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input id="country" name="listing[country]" value="<%= listing.country %>" type="text" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="maxGuests">Maximum Guests</label>
+            <select id="maxGuests" name="listing[maxGuests]" required>
+              <option value="1" <%= listing.maxGuests === 1 ? 'selected' : '' %>>1 Guest</option>
+              <option value="2" <%= listing.maxGuests === 2 ? 'selected' : '' %>>2 Guests</option>
+              <option value="3" <%= listing.maxGuests === 3 ? 'selected' : '' %>>3 Guests</option>
+              <option value="4" <%= listing.maxGuests === 4 ? 'selected' : '' %>>4 Guests</option>
+              <option value="5" <%= listing.maxGuests === 5 ? 'selected' : '' %>>5 Guests</option>
+              <option value="6" <%= listing.maxGuests >= 6 ? 'selected' : '' %>>6+ Guests</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="available">Availability</label>
+            <select id="available" name="listing[available]" required>
+              <option value="true" <%= listing.available ? 'selected' : '' %>>Available</option>
+              <option value="false" <%= !listing.available ? 'selected' : '' %>>Not Available</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkin">Available From</label>
+            <input id="checkin" name="listing[checkin]" type="date" value="<%= listing.checkin ? listing.checkin.toISOString().split('T')[0] : '' %>" required />
+          </div>
+          <div class="form-group">
+            <label for="checkout">Available Until</label>
+            <input id="checkout" name="listing[checkout]" type="date" value="<%= listing.checkout ? listing.checkout.toISOString().split('T')[0] : '' %>" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Image URL</label>
+          <input id="image" name="listing[image]" value="<%= listing.image && listing.image.url ? listing.image.url : (listing.image || '') %>" type="url" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn">Update Listing</button>
+          <a href="/listings/<%= listing._id %>" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

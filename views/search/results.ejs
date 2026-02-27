@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Results - UrbanBUNK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <h1>UrbanBUNK</h1>
+        <p>Your Urban Escape</p>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/listings">All Listings</a>
+        <% if (currentUser) { %>
+          <a href="/listings/new">Add Listing</a>
+          <a href="/favorites">My Favorites</a>
+          <a href="/logout">Logout</a>
+          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
+        <% } else { %>
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <section class="search-results">
+      <div class="container">
+        <div class="search-header">
+          <h1>Search Results</h1>
+          <% if (searchQuery.location || searchQuery.checkin || searchQuery.checkout || searchQuery.guests) { %>
+            <div class="search-filters">
+              <% if (searchQuery.location) { %>
+                <span class="filter-tag">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <%= searchQuery.location %>
+                </span>
+              <% } %>
+              <% if (searchQuery.checkin) { %>
+                <span class="filter-tag">
+                  <i class="fas fa-calendar-check"></i>
+                  Check-in: <%= new Date(searchQuery.checkin).toLocaleDateString() %>
+                </span>
+              <% } %>
+              <% if (searchQuery.checkout) { %>
+                <span class="filter-tag">
+                  <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('<%= listing._id %>', this)" data-listing-id="<%= listing._id %>"></i>
+                  Check-out: <%= new Date(searchQuery.checkout).toLocaleDateString() %>
+                </span>
+              <% } %>
+              <% if (searchQuery.guests) { %>
+                <span class="filter-tag">
+                  <i class="fas fa-users"></i>
+                  <%= searchQuery.guests %> Guests
+                </span>
+              <% } %>
+            </div>
+          <% } %>
+          <div class="results-count">
+            <% if (totalResults === 0) { %>
+              <p class="no-results">No properties found matching your criteria.</p>
+            <% } else { %>
+              <p>Found <strong><%= totalResults %></strong> amazing properties</p>
+            <% } %>
+          </div>
+        </div>
+
+        <% if (searchResults.length > 0) { %>
+          <div class="search-results-grid">
+            <% searchResults.forEach(listing => { %>
+              <div class="search-result-card">
+                <div class="result-image">
+                  <% if (listing.image && listing.image.url) { %>
+                    <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
+                  <% } else { %>
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
+                  <% } %>
+                  <div class="result-price">$<%= listing.price %><span>/night</span></div>
+                  <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('<%= listing._id %>', this)" data-listing-id="<%= listing._id %>"></i>
+                </div>
+                <div class="result-content">
+                  <h3><%= listing.title %></h3>
+                  <p class="result-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <%= listing.location %>, <%= listing.country %>
+                  </p>
+                  <p class="result-description"><%= listing.description %></p>
+                  <div class="result-details">
+                    <span class="detail-item">
+                      <i class="fas fa-users"></i>
+                      Up to <%= listing.maxGuests %> guests
+                    </span>
+                    <span class="detail-item">
+                      <i class="fas fa-check-circle"></i>
+                      <%= listing.available ? 'Available' : 'Not Available' %>
+                    </span>
+                  </div>
+                  <div class="result-actions">
+                    <a href="/listings/<%= listing._id %>" class="btn">View Details</a>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="no-results-container">
+            <div class="no-results-icon">
+              <i class="fas fa-search"></i>
+            </div>
+            <h2>No Properties Found</h2>
+            <p>We couldn't find any properties matching your search criteria. Try adjusting your filters or search for a different location.</p>
+            <div class="no-results-actions">
+              <a href="/" class="btn">Back to Search</a>
+              <a href="/listings" class="btn btn-secondary">View All Listings</a>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </body>
+</html>

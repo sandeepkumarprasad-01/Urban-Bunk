@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - UrbanBUNK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">  
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <h1>UrbanBUNK</h1>
+        <p>Your Urban Escape</p>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/listings">All Listings</a>
+        <a href="/listings/new">Add Listing</a>
+        <a href="/favorites">My Favorites</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Find your next urban adventure</h1>
+        <p>Search deals on hotels, homes, and much more...</p>
+        <div class="search-bar">
+          <form class="search-form">
+            <div class="search-input">
+              <label for="location">Where are you going?</label>
+              <input type="text" id="location" placeholder="Search destinations" list="destinations" />
+            </div>
+            <div class="search-input">
+              <label for="checkin">Check-in</label>
+              <input type="date" id="checkin" />
+            </div>
+            <div class="search-input">
+              <label for="checkout">Check-out</label>
+              <input type="date" id="checkout" />
+            </div>
+            <div class="search-input">
+              <label for="guests">Guests</label>
+              <select id="guests">
+                <option>1 guest</option>
+                <option>2 guests</option>
+                <option>3 guests</option>
+                <option>4+ guests</option>
+              </select>
+            </div>
+            <button type="submit" class="search-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Urban cityscape" />
+      </div>
+    </section>
+
+    <section class="featured">
+      <div class="container">
+        <h2>Popular destinations</h2>
+        <div class="destinations">
+          <div class="destination-card">
+            <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="New York" />
+            <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('sample1', this)" data-listing-id="sample1"></i>
+            <h3>New York</h3>
+            <p>2 hours away</p>
+          </div>
+          <div class="destination-card">
+            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="Los Angeles" />
+            <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('sample2', this)" data-listing-id="sample2"></i>
+            <h3>Los Angeles</h3>
+            <p>5 hours away</p>
+          </div>
+          <div class="destination-card">
+            <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="Chicago" />
+            <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('sample3', this)" data-listing-id="sample3"></i>
+            <h3>Chicago</h3>
+            <p>3 hours away</p>
+          </div>
+        </div>
+        <div class="view-all">
+          <a href="/listings" class="btn">View All Listings</a>
+        </div>
+      </div>
+      <datalist id="destinations">
+        <option value="New York">
+        <option value="Los Angeles">
+        <option value="Chicago">
+        <option value="Miami">
+        <option value="San Francisco">
+        <option value="Las Vegas">
+        <option value="Seattle">
+        <option value="Boston">
+        <option value="Austin">
+        <option value="Denver">
+      </datalist>
+    </section>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    // Enhanced search functionality
+    const locationInput = document.getElementById('location');
+    const checkinInput = document.getElementById('checkin');
+    const checkoutInput = document.getElementById('checkout');
+    const guestsSelect = document.getElementById('guests');
+    const searchForm = document.querySelector('.search-form');
+    
+    // Auto-set minimum dates
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Initialize date pickers with enhanced options
+    flatpickr("#checkin", {
+      dateFormat: "d-m-Y",
+      minDate: today,
+      defaultDate: today,
+      onChange: function(selectedDates, dateStr, instance) {
+        instance.input.classList.add('date-selected');
+        setTimeout(function() {
+          instance.input.classList.remove('date-selected');
+        }, 500);
+        
+        // Update checkout minimum date
+        if (selectedDates[0]) {
+          checkoutFlatpickr.set('minDate', new Date(selectedDates[0].getTime() + 24 * 60 * 60 * 1000));
+          // Auto-set checkout to next day if not set or before checkin
+          if (!checkoutFlatpickr.selectedDates[0] || checkoutFlatpickr.selectedDates[0] <= selectedDates[0]) {
+            const nextDay = new Date(selectedDates[0].getTime() + 24 * 60 * 60 * 1000);
+            checkoutFlatpickr.setDate(nextDay);
+          }
+        }
+      }
+    });
+    
+    const checkoutFlatpickr = flatpickr("#checkout", {
+      dateFormat: "d-m-Y",
+      minDate: tomorrow,
+      defaultDate: tomorrow,
+      onChange: function(selectedDates, dateStr, instance) {
+        instance.input.classList.add('date-selected');
+        setTimeout(function() {
+          instance.input.classList.remove('date-selected');
+        }, 500);
+      }
+    });
+    
+    // Enhanced location search with autocomplete
+    locationInput.addEventListener('input', function(e) {
+      const value = e.target.value.toLowerCase();
+      if (value.length > 2) {
+        // Add search suggestions functionality
+        console.log('Searching for:', value);
+      }
+    });
+    
+    // Form submission with validation
+    searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const location = locationInput.value.trim();
+      const checkin = checkinInput.value;
+      const checkout = checkoutInput.value;
+      const guests = guestsSelect.value;
+      
+      if (!location) {
+        showError(locationInput, 'Please enter a destination');
+        return;
+      }
+      
+      if (!checkin || !checkout) {
+        if (!checkin) showError(checkinInput, 'Please select check-in date');
+        if (!checkout) showError(checkoutInput, 'Please select check-out date');
+        return;
+      }
+      
+      // Build search query
+      const searchParams = new URLSearchParams({
+        location: location,
+        checkin: checkin,
+        checkout: checkout,
+        guests: guests
+      });
+      
+      // Redirect to search results
+      console.log('Searching with params:', searchParams.toString());
+      window.location.href = '/search?' + searchParams.toString();
+    });
+    
+    function showError(input, message) {
+      input.style.borderColor = '#ef4444';
+      input.setAttribute('title', message);
+      setTimeout(function() {
+        input.style.borderColor = '';
+        input.removeAttribute('title');
+      }, 3000);
+    }
+    
+    // Add hover effects for search inputs
+    document.querySelectorAll('.search-input').forEach(function(input) {
+      input.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.02)';
+      });
+      input.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1)';
+      });
+    });
+
+    // Favorites functionality
+    async function toggleFavorite(listingId, element) {
+      try {
+        const isFavorited = element.classList.contains('favorited');
+        
+        if (isFavorited) {
+          // Remove from favorites
+          const response = await fetch('/favorites/by-listing/' + listingId, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          if (response.ok) {
+            element.classList.remove('favorited');
+            element.style.color = 'rgba(255, 255, 255, 0.8)';
+          }
+        } else {
+          // Add to favorites
+          const response = await fetch('/favorites/' + listingId, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          if (response.ok) {
+            element.classList.add('favorited');
+            element.style.color = '#ff385c';
+          }
+        }
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+      }
+    }
+
+    // Check if listings are favorited on page load
+    async function checkFavoriteStatus() {
+      const favoriteIcons = document.querySelectorAll('.favorite-icon');
+      for (var i = 0; i < favoriteIcons.length; i++) {
+        var icon = favoriteIcons[i];
+        var listingId = icon.getAttribute('data-listing-id');
+        if (listingId) {
+          try {
+            const response = await fetch('/favorites/check/' + listingId);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.isFavorited) {
+                icon.classList.add('favorited');
+                icon.style.color = '#ff385c';
+              }
+            }
+          } catch (error) {
+            console.error('Error checking favorite status:', error);
+          }
+        }
+      }
+    }
+
+    // Initialize favorite status on page load
+    checkFavoriteStatus();
+  </script>
+</html>

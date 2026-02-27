@@ -1,0 +1,27 @@
+{
+  "name": "urbanbunk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "flatpickr": "^4.6.13",
+    "method-override": "^3.0.0",
+    "mongoose": "^7.5.2",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0"
+  }
+}

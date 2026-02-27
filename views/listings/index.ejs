@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Listings - UrbanBUNK</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <h1>UrbanBUNK</h1>
+        <p>Your Urban Escape</p>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/listings" class="active">All Listings</a>
+        <% if (currentUser) { %>
+          <a href="/listings/new">Add Listing</a>
+          <a href="/favorites">My Favorites</a>
+          <a href="/logout">Logout</a>
+          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
+        <% } else { %>
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <section class="favorites">
+      <div class="container">
+        <div class="heading-box">
+          <h1>All Listings</h1>
+        </div>
+        
+        <% if (allListings.length === 0) { %>
+          <div class="no-favorites-container">
+            <div class="no-favorites-icon">
+              <i class="fas fa-home"></i>
+            </div>
+            <h2>No Listings Available</h2>
+            <p>Be the first to add a property to our collection!</p>
+            <div class="no-favorites-actions">
+              <a href="/listings/new" class="btn">Add First Listing</a>
+              <a href="/" class="btn btn-secondary">Go Home</a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="favorites-grid">
+            <% allListings.forEach(listing => { %>
+              <div class="favorite-card">
+                <div class="favorite-image">
+                  <% if(listing.image && listing.image.url) { %>
+                    <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
+                  <% } else if(listing.image && typeof listing.image === 'string') { %>
+                    <img src="<%= listing.image %>" alt="<%= listing.title %>">
+                  <% } else { %>
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
+                  <% } %>
+                  <div class="favorite-price">$<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                  <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('<%= listing._id %>', this)" data-listing-id="<%= listing._id %>"></i>
+                </div>
+                <div class="favorite-content">
+                  <h3><%= listing.title %></h3>
+                  <p class="favorite-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <%= listing.location %>, <%= listing.country %>
+                  </p>
+                  <p class="favorite-description" id="desc-<%= listing._id %>"><%= listing.description || 'No description available' %></p>
+                  <button class="show-more-btn" onclick="toggleDescription('<%= listing._id %>')" id="btn-<%= listing._id %>">Show More</button>
+                  <div class="favorite-details">
+                    <span class="detail-item">
+                      <i class="fas fa-users"></i>
+                      Up to <%= listing.maxGuests || 2 %> guests
+                    </span>
+                    <span class="detail-item">
+                      <i class="fas fa-check-circle"></i>
+                      <%= listing.available ? 'Available' : 'Not Available' %>
+                    </span>
+                  </div>
+                  <div class="favorite-actions">
+                    <a href="/listings/<%= listing._id %>" class="btn">View Details</a>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <script>
+      // Favorites functionality
+      async function toggleFavorite(listingId, element) {
+        try {
+          const isFavorited = element.classList.contains('favorited');
+          
+          if (isFavorited) {
+            // Remove from favorites
+            const response = await fetch(`/favorites/by-listing/${listingId}`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+            
+            if (response.ok) {
+              element.classList.remove('favorited');
+              element.style.color = 'rgba(255, 255, 255, 0.8)';
+              showNotification('Removed from favorites', 'success');
+            } else {
+              showNotification('Error removing favorite', 'error');
+            }
+          } else {
+            // Add to favorites
+            const response = await fetch(`/favorites/${listingId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+            
+            if (response.status === 201) {
+              element.classList.add('favorited');
+              element.style.color = '#ff385c';
+              showNotification('Added to favorites', 'success');
+            } else if (response.status === 400) {
+              const errorData = await response.json();
+              showNotification(errorData.message || 'Already in favorites', 'warning');
+            } else {
+              showNotification('Error adding favorite', 'error');
+            }
+          }
+        } catch (error) {
+          console.error('Error toggling favorite:', error);
+          showNotification('Network error. Please try again.', 'error');
+        }
+      }
+
+      // Show notification function
+      function showNotification(message, type = 'info') {
+        // Remove any existing notifications
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Add styles
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 20px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          z-index: 10000;
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        `;
+        
+        // Set background color based on type
+        switch(type) {
+          case 'success':
+            notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            break;
+          case 'error':
+            notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            break;
+          case 'warning':
+            notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            break;
+          default:
+            notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+          notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }, 3000);
+      }
+
+      // Check if listings are favorited on page load
+      async function checkFavoriteStatus() {
+        const favoriteIcons = document.querySelectorAll('.favorite-icon');
+        for (const icon of favoriteIcons) {
+          const listingId = icon.getAttribute('data-listing-id');
+          if (listingId) {
+            try {
+              const response = await fetch(`/favorites/check/${listingId}`);
+              if (response.ok) {
+                const data = await response.json();
+                if (data.isFavorited) {
+                  icon.classList.add('favorited');
+                  icon.style.color = '#ff385c';
+                }
+              }
+            } catch (error) {
+              console.error('Error checking favorite status:', error);
+            }
+          }
+        }
+      }
+
+      // Initialize favorite status on page load
+      checkFavoriteStatus();
+
+      // Toggle description function
+      function toggleDescription(listingId) {
+        const descElement = document.getElementById(`desc-${listingId}`);
+        const btnElement = document.getElementById(`btn-${listingId}`);
+        
+        if (descElement.classList.contains('expanded')) {
+          // Collapse
+          descElement.classList.remove('expanded');
+          btnElement.textContent = 'Show More';
+        } else {
+          // Expand
+          descElement.classList.add('expanded');
+          btnElement.textContent = 'Show Less';
+        }
+      }
+    </script>
+
+    <style>
+      .user-welcome {
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 500;
+        margin-left: 20px;
+        padding: 8px 16px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 20px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+      }
+    </style>
+  </body>
+</html>
