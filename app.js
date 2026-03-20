@@ -29,10 +29,24 @@ const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust
 
 main()
   .then(() => {
-    console.log("connected to DB");
+    console.log("Connected to MongoDB successfully!");
+    
+    // Move app.listen here so the server only starts if DB connection works
+    const PORT = process.env.PORT || 8080;
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT}`);
+    });
   })
   .catch((err) => {
-    console.log(err);
+    console.error("\n============================================================");
+    console.error("❌ DATABASE CONNECTION ERROR");
+    console.error("============================================================");
+    console.error("Failed to connect to MongoDB.");
+    console.error("If your friend downloaded this from GitHub, they are likely missing the `.env` file");
+    console.error("which contains the MONGO_URL. Please follow the instructions in the README.md!");
+    console.error("============================================================\n");
+    console.error("Technical details:", err.message);
+    process.exit(1);
   });
 
 async function main() {
@@ -54,6 +68,8 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: MONGO_URL,
     touchAfter: 24 * 3600,
+    // Add clientPromise to re-use mongoose connection and prevent separate crash
+    clientPromise: mongoose.connection.asPromise().then(() => mongoose.connection.getClient())
   }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
@@ -383,6 +399,4 @@ app.get("/search", async (req, res) => {
   }
 });
 
-app.listen(8080, () => {
-  console.log("server is listening to port 8080");
-});
+// Server startup moved to main().then() above to ensure DB connects first
