@@ -4,17 +4,17 @@ A Web-Based Accommodation Booking Platform
 
 ## 🚀 How to Run the Project (For Friends/Collaborators)
 
-### Step 1: Install Dependencies
+### Quick Start
 Open your terminal in the project folder and run:
 ```bash
-npm install
+npm run dev
 ```
 
-### Step 2: Start the Server
-Start the application by running:
-```bash
-npm start
-```
-The server will automatically connect to MongoDB and start on `http://localhost:8080`.
+This single command will:
+1. Automatically install all required modules
+2. Start the server using Nodemon
+3. Automatically connect to MongoDB
 
-*(Note: The environment variables `.env` have now been included in the repository to make setup as simple as possible!)*
+The server will start on `http://localhost:8080`. You can view it in your browser!
+
+*(Note: The environment variables `.env` have already been included in the repository so you don't need to configure anything manually!)*

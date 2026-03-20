@@ -1,24 +1,71 @@
 const express = require('express');
 const router = express.Router();
 const Listing = require('../models/listing.js');
+const Review = require('../models/Review.js');
 const { isAuthenticated, isOwner } = require('../middleware/auth');
 
 // Index Route
 router.get("/listings", async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("listings/index.ejs", { allListings });
+  try {
+    const { category, sort } = req.query;
+    let query = {};
+    if (category) {
+      query.category = category;
+    }
+    
+    let sortQuery = { _id: -1 };
+    if (sort === 'price_low') {
+      sortQuery = { price: 1 };
+    } else if (sort === 'price_high') {
+      sortQuery = { price: -1 };
+    }
+    
+    const allListings = await Listing.find(query).sort(sortQuery);
+    res.render("listings/index.ejs", { 
+      allListings,
+      activeCategory: category || '',
+      activeSort: sort || 'newest'
+    });
+  } catch (error) {
+    console.error('Error fetching listings:', error);
+    res.status(500).send('Error fetching listings');
+  }
 });
 
 // New Route - Protected
 router.get("/listings/new", isAuthenticated, (req, res) => {
-  res.render("listings/new.ejs");
+  res.render("listings/new.ejs", {
+    categories: Listing.CATEGORIES,
+    propertyTypes: Listing.PROPERTY_TYPES
+  });
 });
 
 // Show Route
 router.get("/listings/:id", async (req, res) => {
-  let { id } = req.params;
-  const listing = await Listing.findById(id).populate('owner');
-  res.render("listings/show.ejs", { listing });
+  try {
+    let { id } = req.params;
+    const listing = await Listing.findById(id).populate('owner');
+    if (!listing) {
+      req.flash('error', 'Listing not found');
+      return res.redirect('/listings');
+    }
+
+    // Fetch reviews for this listing
+    const reviews = await Review.find({ listing: id }).populate('user');
+
+    // Calculate average rating
+    let avgRating = null;
+    if (reviews.length > 0) {
+      const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+      avgRating = (sum / reviews.length).toFixed(1);
+    }
+
+    res.render("listings/show.ejs", { listing, reviews, avgRating });
+  } catch (error) {
+    console.error('Error loading listing:', error);
+    req.flash('error', 'Something went wrong');
+    res.redirect('/listings');
+  }
 });
 
 // Create Route - Protected
@@ -61,7 +108,11 @@ router.post("/listings", isAuthenticated, async (req, res) => {
 router.get("/listings/:id/edit", isOwner, async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
-  res.render("listings/edit.ejs", { listing });
+  res.render("listings/edit.ejs", { 
+    listing,
+    categories: Listing.CATEGORIES,
+    propertyTypes: Listing.PROPERTY_TYPES
+  });
 });
 
 // Update Route - Protected (owner only)
