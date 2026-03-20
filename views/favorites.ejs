@@ -1,33 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Favorites - UrbanBUNK</title>
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <header>
-      <div class="logo">
-        <h1>UrbanBUNK</h1>
-        <p>Your Urban Escape</p>
-      </div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/listings">All Listings</a>
-        <% if (currentUser) { %>
-          <a href="/listings/new">Add Listing</a>
-          <a href="/favorites" class="active">My Favorites</a>
-          <a href="/logout">Logout</a>
-          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    </header>
+<%- include('partials/header', { title: 'My Favorites - UrbanBUNK' }) %>
 
     <section class="favorites">
       <div class="container">
@@ -43,27 +14,30 @@
             <h2>No Favorites Yet</h2>
             <p>Start exploring and save your favorite properties for quick access!</p>
             <div class="no-favorites-actions">
-              <a href="/" class="btn">Start Searching</a>
-              <a href="/listings" class="btn btn-secondary">Browse All Listings</a>
+              <a href="/" class="btn"><i class="fas fa-search"></i> Start Searching</a>
+              <a href="/listings" class="btn btn-secondary">Browse All</a>
             </div>
           </div>
         <% } else { %>
           <div class="favorites-grid">
             <% favorites.forEach(favorite => { %>
-              <div class="favorite-card">
+              <div class="favorite-card reveal-on-scroll">
                 <div class="favorite-image">
-                  <% if (favorite.listing.image && favorite.listing.image.url) { %>
+                  <% if (favorite.listing && favorite.listing.image && favorite.listing.image.url) { %>
                     <img src="<%= favorite.listing.image.url %>" alt="<%= favorite.listing.title %>">
-                  <% } else if (favorite.listing.image && typeof favorite.listing.image === 'string') { %>
+                  <% } else if (favorite.listing && favorite.listing.image && typeof favorite.listing.image === 'string') { %>
                     <img src="<%= favorite.listing.image %>" alt="<%= favorite.listing.title %>">
                   <% } else { %>
-                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= favorite.listing.title %>">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= favorite.listing ? favorite.listing.title : 'Property' %>">
                   <% } %>
-                  <div class="favorite-price">$<%= favorite.listing.price %><span>/night</span></div>
+                  <% if (favorite.listing) { %>
+                    <div class="favorite-price">₹<%= favorite.listing.price ? favorite.listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                  <% } %>
                   <button class="remove-favorite" onclick="removeFavorite('<%= favorite._id %>')" title="Remove from favorites">
                     <i class="fas fa-heart-broken"></i>
                   </button>
                 </div>
+                <% if (favorite.listing) { %>
                 <div class="favorite-content">
                   <h3><%= favorite.listing.title %></h3>
                   <p class="favorite-location">
@@ -86,6 +60,7 @@
                     <a href="/listings/<%= favorite.listing._id %>" class="btn">View Details</a>
                   </div>
                 </div>
+                <% } %>
               </div>
             <% }); %>
           </div>
@@ -95,68 +70,34 @@
 
     <script>
       async function removeFavorite(favoriteId) {
-        if (confirm('Are you sure you want to remove this from favorites?')) {
+        if (confirm('Remove this from favorites?')) {
           try {
-            const response = await fetch(`/favorites/${favoriteId}`, {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
-            
-            if (response.ok) {
-              // Remove card from DOM with animation
+            const res = await fetch(`/favorites/${favoriteId}`, { method: 'DELETE' });
+            if (res.ok) {
               const card = event.target.closest('.favorite-card');
               card.style.transition = 'all 0.3s ease';
               card.style.opacity = '0';
               card.style.transform = 'scale(0.8)';
-              
               setTimeout(() => {
                 card.remove();
-                // Check if no favorites left
-                const remainingCards = document.querySelectorAll('.favorite-card');
-                if (remainingCards.length === 0) {
-                  location.reload();
-                }
+                if (!document.querySelector('.favorite-card')) location.reload();
               }, 300);
-            } else {
-              alert('Error removing favorite');
             }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('Error removing favorite');
-          }
+          } catch (e) { console.error(e); }
         }
       }
 
-      // Toggle description function
-      function toggleDescription(favoriteId) {
-        const descElement = document.getElementById(`desc-${favoriteId}`);
-        const btnElement = document.getElementById(`btn-${favoriteId}`);
-        
-        if (descElement.classList.contains('expanded')) {
-          // Collapse
-          descElement.classList.remove('expanded');
-          btnElement.textContent = 'Show More';
+      function toggleDescription(id) {
+        const desc = document.getElementById(`desc-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+        if (desc.classList.contains('expanded')) {
+          desc.classList.remove('expanded');
+          btn.textContent = 'Show More';
         } else {
-          // Expand
-          descElement.classList.add('expanded');
-          btnElement.textContent = 'Show Less';
+          desc.classList.add('expanded');
+          btn.textContent = 'Show Less';
         }
       }
     </script>
 
-    <style>
-      .user-welcome {
-        color: var(--text-secondary);
-        font-size: 14px;
-        font-weight: 500;
-        margin-left: 20px;
-        padding: 8px 16px;
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 20px;
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-    </style>
-  </body>
-</html>
+<%- include('partials/footer') %>

@@ -1,0 +1,104 @@
+<%- include('../partials/header', { title: 'Host Dashboard - UrbanBUNK' }) %>
+
+    <section class="dashboard-section">
+      <div class="container">
+        <div class="dashboard-header">
+          <div>
+            <h1>Welcome back, <span class="accent-text"><%= currentUser.username %></span></h1>
+            <p class="dashboard-subtitle">Here's an overview of your hosting activity</p>
+          </div>
+          <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add New Listing</a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+              <i class="fas fa-home"></i>
+            </div>
+            <div class="stat-card-info">
+              <span class="stat-card-number"><%= stats.totalListings %></span>
+              <span class="stat-card-label">Total Listings</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-card-info">
+              <span class="stat-card-number"><%= stats.totalBookings %></span>
+              <span class="stat-card-label">Active Bookings</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+              <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-card-info">
+              <span class="stat-card-number">₹<%= stats.totalRevenue.toLocaleString('en-IN') %></span>
+              <span class="stat-card-label">Total Revenue</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-card-info">
+              <span class="stat-card-number"><%= stats.avgRating %> <small style="font-size:12px;color:var(--text-muted);">(<%= stats.reviewCount %>)</small></span>
+              <span class="stat-card-label">Avg Rating</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="dashboard-quick-links">
+          <a href="/dashboard/listings" class="quick-link-card">
+            <i class="fas fa-th-list"></i>
+            <span>Manage Listings</span>
+            <i class="fas fa-chevron-right"></i>
+          </a>
+          <a href="/dashboard/bookings" class="quick-link-card">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Manage Bookings</span>
+            <% if (stats.pendingBookings > 0) { %>
+              <span class="pending-badge"><%= stats.pendingBookings %></span>
+            <% } %>
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="dashboard-recent">
+          <h2><i class="fas fa-clock"></i> Recent Bookings</h2>
+          <% if (recentBookings.length === 0) { %>
+            <div class="empty-state-mini">
+              <p>No bookings yet. Share your listings to start receiving bookings!</p>
+            </div>
+          <% } else { %>
+            <div class="recent-bookings-table">
+              <div class="table-header">
+                <span>Guest</span>
+                <span>Property</span>
+                <span>Dates</span>
+                <span>Amount</span>
+                <span>Status</span>
+              </div>
+              <% recentBookings.forEach(booking => { %>
+                <div class="table-row">
+                  <span class="table-guest">
+                    <span class="guest-avatar"><%= booking.user ? booking.user.username.charAt(0).toUpperCase() : '?' %></span>
+                    <%= booking.user ? booking.user.username : 'Unknown' %>
+                  </span>
+                  <span><%= booking.listing ? booking.listing.title : 'Removed' %></span>
+                  <span class="table-dates"><%= booking.checkIn.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) %> — <%= booking.checkOut.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) %></span>
+                  <span class="table-amount">₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+                  <span><span class="booking-status-badge status-<%= booking.status %>"><%= booking.status %></span></span>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+
+<%- include('../partials/footer') %>

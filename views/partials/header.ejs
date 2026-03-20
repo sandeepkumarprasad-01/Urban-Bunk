@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof title !== 'undefined' ? title : 'UrbanBUNK' %></title>
+    <meta name="description" content="UrbanBUNK - Discover extraordinary stays around the world. Book unique homes, apartments, and experiences." />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Flash Messages -->
+    <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+      <% success.forEach(msg => { %>
+        <div class="flash-toast flash-success">
+          <i class="fas fa-check-circle"></i>
+          <span><%= msg %></span>
+          <button class="flash-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>
+      <% }); %>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+      <% error.forEach(msg => { %>
+        <div class="flash-toast flash-error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span><%= msg %></span>
+          <button class="flash-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>
+      <% }); %>
+    <% } %>
+
+    <header id="main-header">
+      <div class="logo">
+        <a href="/">
+          <h1>Urban<span>BUNK</span></h1>
+        </a>
+      </div>
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="mainNav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/listings" class="nav-link">Explore</a>
+        <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+          <a href="/favorites" class="nav-link"><i class="fas fa-heart"></i> Favorites</a>
+          <a href="/bookings" class="nav-link"><i class="fas fa-suitcase"></i> My Bookings</a>
+          <a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+          <a href="/listings/new" class="nav-link">Add Listing</a>
+          <div class="nav-user">
+            <span class="user-avatar"><%= currentUser.username.charAt(0).toUpperCase() %></span>
+            <span class="user-name"><%= currentUser.username %></span>
+            <a href="/logout" class="nav-link logout-btn">Logout</a>
+          </div>
+        <% } else { %>
+          <a href="/login" class="nav-link btn-nav-outline">Sign In</a>
+          <a href="/register" class="nav-link btn-nav-filled">Get Started</a>
+        <% } %>
+      </nav>
+    </header>

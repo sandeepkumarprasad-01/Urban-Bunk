@@ -1,56 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>All Listings - UrbanBUNK</title>
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <header>
-      <div class="logo">
-        <h1>UrbanBUNK</h1>
-        <p>Your Urban Escape</p>
-      </div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/listings" class="active">All Listings</a>
-        <% if (currentUser) { %>
-          <a href="/listings/new">Add Listing</a>
-          <a href="/favorites">My Favorites</a>
-          <a href="/logout">Logout</a>
-          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    </header>
+<%- include('../partials/header', { title: 'All Listings - UrbanBUNK' }) %>
 
-    <section class="favorites">
+    <section class="listings-section">
       <div class="container">
         <div class="heading-box">
           <h1>All Listings</h1>
         </div>
-        
+
+        <!-- Category Tabs + Sort -->
+        <div class="listings-toolbar">
+          <div class="category-tabs">
+            <a href="/listings" class="cat-tab <%= !activeCategory ? 'active' : '' %>">All</a>
+            <% categories.forEach(cat => { %>
+              <a href="/listings?category=<%= cat %><%= activeSort !== 'newest' ? '&sort=' + activeSort : '' %>" 
+                 class="cat-tab <%= activeCategory === cat ? 'active' : '' %>">
+                <%= cat %>
+              </a>
+            <% }); %>
+          </div>
+          <div class="sort-dropdown">
+            <select id="sortSelect" onchange="applySort(this.value)">
+              <option value="newest" <%= activeSort === 'newest' ? 'selected' : '' %>>Newest First</option>
+              <option value="price_low" <%= activeSort === 'price_low' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="price_high" <%= activeSort === 'price_high' ? 'selected' : '' %>>Price: High to Low</option>
+            </select>
+          </div>
+        </div>
+
         <% if (allListings.length === 0) { %>
           <div class="no-favorites-container">
             <div class="no-favorites-icon">
               <i class="fas fa-home"></i>
             </div>
-            <h2>No Listings Available</h2>
-            <p>Be the first to add a property to our collection!</p>
+            <h2>No Listings Found</h2>
+            <p><%= activeCategory ? 'No ' + activeCategory + ' listings available. Try a different category!' : 'Be the first to add a property to our collection!' %></p>
             <div class="no-favorites-actions">
-              <a href="/listings/new" class="btn">Add First Listing</a>
-              <a href="/" class="btn btn-secondary">Go Home</a>
+              <% if (activeCategory) { %>
+                <a href="/listings" class="btn"><i class="fas fa-th"></i> View All</a>
+              <% } %>
+              <a href="/listings/new" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Listing</a>
             </div>
           </div>
         <% } else { %>
           <div class="favorites-grid">
             <% allListings.forEach(listing => { %>
-              <div class="favorite-card">
+              <div class="favorite-card reveal-on-scroll">
                 <div class="favorite-image">
                   <% if(listing.image && listing.image.url) { %>
                     <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
@@ -59,8 +52,11 @@
                   <% } else { %>
                     <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
                   <% } %>
-                  <div class="favorite-price">$<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
-                  <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('<%= listing._id %>', this)" data-listing-id="<%= listing._id %>"></i>
+                  <div class="favorite-price">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                  <i class="fas fa-heart favorite-icon" data-listing-id="<%= listing._id %>"></i>
+                  <% if (listing.category) { %>
+                    <span class="card-category-tag"><%= listing.category %></span>
+                  <% } %>
                 </div>
                 <div class="favorite-content">
                   <h3><%= listing.title %></h3>
@@ -79,6 +75,12 @@
                       <i class="fas fa-check-circle"></i>
                       <%= listing.available ? 'Available' : 'Not Available' %>
                     </span>
+                    <% if (listing.propertyType) { %>
+                      <span class="detail-item">
+                        <i class="fas fa-building"></i>
+                        <%= listing.propertyType %>
+                      </span>
+                    <% } %>
                   </div>
                   <div class="favorite-actions">
                     <a href="/listings/<%= listing._id %>" class="btn">View Details</a>
@@ -92,167 +94,51 @@
     </section>
 
     <script>
-      // Favorites functionality
-      async function toggleFavorite(listingId, element) {
-        try {
-          const isFavorited = element.classList.contains('favorited');
-          
-          if (isFavorited) {
-            // Remove from favorites
-            const response = await fetch(`/favorites/by-listing/${listingId}`, {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
-            
-            if (response.ok) {
-              element.classList.remove('favorited');
-              element.style.color = 'rgba(255, 255, 255, 0.8)';
-              showNotification('Removed from favorites', 'success');
-            } else {
-              showNotification('Error removing favorite', 'error');
-            }
-          } else {
-            // Add to favorites
-            const response = await fetch(`/favorites/${listingId}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
-            
-            if (response.status === 201) {
-              element.classList.add('favorited');
-              element.style.color = '#ff385c';
-              showNotification('Added to favorites', 'success');
-            } else if (response.status === 400) {
-              const errorData = await response.json();
-              showNotification(errorData.message || 'Already in favorites', 'warning');
-            } else {
-              showNotification('Error adding favorite', 'error');
-            }
-          }
-        } catch (error) {
-          console.error('Error toggling favorite:', error);
-          showNotification('Network error. Please try again.', 'error');
-        }
-      }
-
-      // Show notification function
-      function showNotification(message, type = 'info') {
-        // Remove any existing notifications
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-          existingNotification.remove();
-        }
-
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        // Add styles
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          padding: 15px 20px;
-          border-radius: 8px;
-          color: white;
-          font-weight: 500;
-          z-index: 10000;
-          transform: translateX(100%);
-          transition: transform 0.3s ease;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        `;
-        
-        // Set background color based on type
-        switch(type) {
-          case 'success':
-            notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            break;
-          case 'error':
-            notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-            break;
-          case 'warning':
-            notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-            break;
-          default:
-            notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
-        }
-        
-        document.body.appendChild(notification);
-        
-        // Animate in
-        setTimeout(() => {
-          notification.style.transform = 'translateX(0)';
-        }, 100);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-          notification.style.transform = 'translateX(100%)';
-          setTimeout(() => {
-            if (notification.parentNode) {
-              notification.remove();
-            }
-          }, 300);
-        }, 3000);
-      }
-
-      // Check if listings are favorited on page load
-      async function checkFavoriteStatus() {
-        const favoriteIcons = document.querySelectorAll('.favorite-icon');
-        for (const icon of favoriteIcons) {
-          const listingId = icon.getAttribute('data-listing-id');
-          if (listingId) {
-            try {
-              const response = await fetch(`/favorites/check/${listingId}`);
-              if (response.ok) {
-                const data = await response.json();
-                if (data.isFavorited) {
-                  icon.classList.add('favorited');
-                  icon.style.color = '#ff385c';
-                }
-              }
-            } catch (error) {
-              console.error('Error checking favorite status:', error);
-            }
-          }
-        }
-      }
-
-      // Initialize favorite status on page load
-      checkFavoriteStatus();
-
-      // Toggle description function
       function toggleDescription(listingId) {
-        const descElement = document.getElementById(`desc-${listingId}`);
-        const btnElement = document.getElementById(`btn-${listingId}`);
-        
-        if (descElement.classList.contains('expanded')) {
-          // Collapse
-          descElement.classList.remove('expanded');
-          btnElement.textContent = 'Show More';
+        const desc = document.getElementById(`desc-${listingId}`);
+        const btn = document.getElementById(`btn-${listingId}`);
+        if (desc.classList.contains('expanded')) {
+          desc.classList.remove('expanded');
+          btn.textContent = 'Show More';
         } else {
-          // Expand
-          descElement.classList.add('expanded');
-          btnElement.textContent = 'Show Less';
+          desc.classList.add('expanded');
+          btn.textContent = 'Show Less';
         }
       }
+
+      function applySort(sortValue) {
+        const url = new URL(window.location);
+        url.searchParams.set('sort', sortValue);
+        window.location = url.toString();
+      }
+
+      // Favorites
+      document.querySelectorAll('.favorite-icon').forEach(icon => {
+        icon.addEventListener('click', async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const id = this.dataset.listingId;
+          const isFav = this.classList.contains('favorited');
+          try {
+            if (isFav) {
+              const res = await fetch(`/favorites/by-listing/${id}`, { method: 'DELETE' });
+              if (res.ok) this.classList.remove('favorited');
+            } else {
+              const res = await fetch(`/favorites/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+              if (res.status === 201) this.classList.add('favorited');
+            }
+          } catch(e) { console.error(e); }
+        });
+      });
+
+      // Check favorites on load
+      document.querySelectorAll('.favorite-icon').forEach(async icon => {
+        const id = icon.dataset.listingId;
+        try {
+          const res = await fetch(`/favorites/check/${id}`);
+          if (res.ok) { const d = await res.json(); if (d.isFavorited) icon.classList.add('favorited'); }
+        } catch(e) {}
+      });
     </script>
 
-    <style>
-      .user-welcome {
-        color: var(--text-secondary);
-        font-size: 14px;
-        font-weight: 500;
-        margin-left: 20px;
-        padding: 8px 16px;
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 20px;
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-    </style>
-  </body>
-</html>
+<%- include('../partials/footer') %>

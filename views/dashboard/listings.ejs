@@ -1,0 +1,71 @@
+<%- include('../partials/header', { title: 'Manage Listings - UrbanBUNK' }) %>
+
+    <section class="dashboard-section">
+      <div class="container">
+        <div class="dashboard-header">
+          <div>
+            <h1><i class="fas fa-th-list"></i> My Listings</h1>
+            <p class="dashboard-subtitle">Manage your properties and availability</p>
+          </div>
+          <div class="dashboard-header-actions">
+            <a href="/dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Dashboard</a>
+            <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add Listing</a>
+          </div>
+        </div>
+
+        <% if (listings.length === 0) { %>
+          <div class="no-favorites-container">
+            <div class="no-favorites-icon"><i class="fas fa-home"></i></div>
+            <h2>No listings yet</h2>
+            <p>Start hosting by adding your first property!</p>
+            <div class="no-favorites-actions">
+              <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Create Listing</a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="dashboard-listings-grid">
+            <% listings.forEach(listing => { %>
+              <div class="dash-listing-card">
+                <div class="dash-listing-image">
+                  <% if (listing.image && listing.image.url) { %>
+                    <img src="<%= listing.image.url %>" alt="<%= listing.title %>">
+                  <% } else { %>
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
+                  <% } %>
+                  <span class="availability-badge <%= listing.available ? 'available' : 'unavailable' %>">
+                    <%= listing.available ? 'Active' : 'Inactive' %>
+                  </span>
+                </div>
+                <div class="dash-listing-content">
+                  <h3><%= listing.title %></h3>
+                  <p class="dash-listing-location"><i class="fas fa-map-marker-alt"></i> <%= listing.location %>, <%= listing.country %></p>
+                  <div class="dash-listing-meta">
+                    <span>₹<%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %>/night</span>
+                    <span><i class="fas fa-users"></i> <%= listing.maxGuests %></span>
+                    <% if (listing.category) { %>
+                      <span class="category-tag"><%= listing.category %></span>
+                    <% } %>
+                  </div>
+                  <div class="dash-listing-actions">
+                    <a href="/listings/<%= listing._id %>" class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i> View</a>
+                    <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                    <form action="/dashboard/listings/<%= listing._id %>/toggle" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-sm <%= listing.available ? 'btn-outline-warning' : 'btn-outline-success' %>">
+                        <i class="fas fa-<%= listing.available ? 'pause' : 'play' %>"></i> <%= listing.available ? 'Deactivate' : 'Activate' %>
+                      </button>
+                    </form>
+                    <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this listing permanently?')">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+<%- include('../partials/footer') %>

@@ -1,32 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Listing - UrbanBUNK</title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <header>
-      <div class="logo">
-        <h1>UrbanBUNK</h1>
-        <p>Your Urban Escape</p>
-      </div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/listings">All Listings</a>
-        <% if (currentUser) { %>
-          <a href="/listings/new">Add Listing</a>
-          <a href="/favorites">My Favorites</a>
-          <a href="/logout">Logout</a>
-          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    </header>
-    <div class="container">
+<%- include('../partials/header', { title: 'Edit Listing - UrbanBUNK' }) %>
+
+    <div class="container" style="padding-top:12px; padding-bottom:80px;">
       <div class="heading-box">
         <h1>Edit Listing</h1>
       </div>
@@ -37,12 +11,12 @@
             <input id="title" name="listing[title]" value="<%= listing.title %>" type="text" required />
           </div>
           <div class="form-group">
-            <label for="price">Price per Night ($)</label>
+            <label for="price">Price per Night (₹)</label>
             <input id="price" name="listing[price]" value="<%= listing.price %>" type="number" min="0" required />
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:20px;">
           <label for="description">Description</label>
           <textarea id="description" name="listing[description]" rows="4" required><%= listing.description %></textarea>
         </div>
@@ -55,6 +29,25 @@
           <div class="form-group">
             <label for="country">Country</label>
             <input id="country" name="listing[country]" value="<%= listing.country %>" type="text" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="listing[category]" required>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat %>" <%= listing.category === cat ? 'selected' : '' %>><%= cat %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="propertyType">Property Type</label>
+            <select id="propertyType" name="listing[propertyType]" required>
+              <% propertyTypes.forEach(pt => { %>
+                <option value="<%= pt %>" <%= listing.propertyType === pt ? 'selected' : '' %>><%= pt %></option>
+              <% }); %>
+            </select>
           </div>
         </div>
 
@@ -90,16 +83,33 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Amenities</label>
+          <div class="amenities-checkboxes">
+            <% 
+              const allAmenities = ['WiFi', 'Air Conditioning', 'Smart TV', 'Kitchen', 'Free Parking', 'Pool Access', '24/7 Security', 'Pet Friendly', 'Gym', 'Washer', 'Dryer', 'Heating', 'Workspace', 'Balcony', 'Garden', 'BBQ', 'Hot Tub', 'Fireplace'];
+              const listingAmenities = listing.amenities || [];
+            %>
+            <% allAmenities.forEach(amenity => { %>
+              <label class="amenity-checkbox">
+                <input type="checkbox" name="listing[amenities]" value="<%= amenity %>"
+                  <%= listingAmenities.includes(amenity) ? 'checked' : '' %> />
+                <span><%= amenity %></span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
           <label for="image">Image URL</label>
           <input id="image" name="listing[image]" value="<%= listing.image && listing.image.url ? listing.image.url : (listing.image || '') %>" type="url" />
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn">Update Listing</button>
+          <button type="submit" class="btn"><i class="fas fa-save"></i> Update Listing</button>
           <a href="/listings/<%= listing._id %>" class="btn btn-secondary">Cancel</a>
         </div>
       </form>
     </div>
-  </body>
-</html>
+
+<%- include('../partials/footer') %>

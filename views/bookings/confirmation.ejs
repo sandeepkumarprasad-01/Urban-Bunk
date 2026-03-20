@@ -1,0 +1,76 @@
+<%- include('../partials/header', { title: 'Booking Confirmed - UrbanBUNK' }) %>
+
+    <section class="booking-confirmation-section">
+      <div class="container">
+        <div class="confirmation-card">
+          <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h1>Booking Confirmed!</h1>
+          <p class="confirmation-subtitle">Your stay at <strong><%= booking.listing.title %></strong> is confirmed.</p>
+
+          <div class="confirmation-details">
+            <div class="conf-detail-row">
+              <div class="conf-detail">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                  <span class="conf-label">Location</span>
+                  <span class="conf-value"><%= booking.listing.location %>, <%= booking.listing.country %></span>
+                </div>
+              </div>
+              <div class="conf-detail">
+                <i class="fas fa-rupee-sign"></i>
+                <div>
+                  <span class="conf-label">Total Paid</span>
+                  <span class="conf-value conf-price">₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+                </div>
+              </div>
+            </div>
+            <div class="conf-detail-row">
+              <div class="conf-detail">
+                <i class="fas fa-calendar-check"></i>
+                <div>
+                  <span class="conf-label">Check-in</span>
+                  <span class="conf-value"><%= booking.checkIn.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+                </div>
+              </div>
+              <div class="conf-detail">
+                <i class="fas fa-calendar-times"></i>
+                <div>
+                  <span class="conf-label">Check-out</span>
+                  <span class="conf-value"><%= booking.checkOut.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+                </div>
+              </div>
+            </div>
+            <div class="conf-detail-row">
+              <div class="conf-detail">
+                <i class="fas fa-users"></i>
+                <div>
+                  <span class="conf-label">Guests</span>
+                  <span class="conf-value"><%= booking.guests %> guest<%= booking.guests > 1 ? 's' : '' %></span>
+                </div>
+              </div>
+              <div class="conf-detail">
+                <i class="fas fa-moon"></i>
+                <div>
+                  <span class="conf-label">Duration</span>
+                  <% const nights = Math.ceil((booking.checkOut - booking.checkIn) / (1000 * 60 * 60 * 24)); %>
+                  <span class="conf-value"><%= nights %> night<%= nights > 1 ? 's' : '' %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmation-id">
+            <span>Booking ID:</span> <code><%= booking._id %></code>
+          </div>
+
+          <div class="confirmation-actions">
+            <a href="/bookings" class="btn"><i class="fas fa-list"></i> My Bookings</a>
+            <a href="/listings" class="btn btn-secondary"><i class="fas fa-compass"></i> Explore More</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<%- include('../partials/footer') %>

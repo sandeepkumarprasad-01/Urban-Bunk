@@ -1,0 +1,86 @@
+<%- include('../partials/header', { title: 'Manage Bookings - UrbanBUNK' }) %>
+
+    <section class="dashboard-section">
+      <div class="container">
+        <div class="dashboard-header">
+          <div>
+            <h1><i class="fas fa-clipboard-list"></i> Incoming Bookings</h1>
+            <p class="dashboard-subtitle">Review and manage guest reservations</p>
+          </div>
+          <a href="/dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+
+        <div class="bookings-tabs">
+          <a href="/dashboard/bookings?tab=pending" class="tab-btn <%= activeTab === 'pending' ? 'active' : '' %>">
+            <i class="fas fa-hourglass-half"></i> Pending
+          </a>
+          <a href="/dashboard/bookings?tab=confirmed" class="tab-btn <%= activeTab === 'confirmed' ? 'active' : '' %>">
+            <i class="fas fa-check-circle"></i> Confirmed
+          </a>
+          <a href="/dashboard/bookings?tab=rejected" class="tab-btn <%= activeTab === 'rejected' ? 'active' : '' %>">
+            <i class="fas fa-times-circle"></i> Rejected / Cancelled
+          </a>
+        </div>
+
+        <% if (bookings.length === 0) { %>
+          <div class="no-favorites-container">
+            <div class="no-favorites-icon"><i class="fas fa-inbox"></i></div>
+            <h2>No <%= activeTab %> bookings</h2>
+            <p>No bookings in this category yet.</p>
+          </div>
+        <% } else { %>
+          <div class="bookings-grid">
+            <% bookings.forEach(booking => { %>
+              <div class="booking-card-item reveal-on-scroll">
+                <div class="booking-card-image">
+                  <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                    <img src="<%= booking.listing.image.url %>" alt="<%= booking.listing.title %>">
+                  <% } else { %>
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="Listing">
+                  <% } %>
+                  <div class="booking-status-badge status-<%= booking.status %>">
+                    <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                  </div>
+                </div>
+                <div class="booking-card-content">
+                  <h3><%= booking.listing ? booking.listing.title : 'Listing Removed' %></h3>
+                  <div class="guest-info">
+                    <span class="guest-avatar"><%= booking.user ? booking.user.username.charAt(0).toUpperCase() : '?' %></span>
+                    <span><strong><%= booking.user ? booking.user.username : 'Unknown' %></strong></span>
+                  </div>
+                  <div class="booking-card-dates">
+                    <div class="booking-date-item">
+                      <i class="fas fa-calendar-check"></i>
+                      <span><%= booking.checkIn.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                    </div>
+                    <i class="fas fa-arrow-right booking-arrow"></i>
+                    <div class="booking-date-item">
+                      <i class="fas fa-calendar-times"></i>
+                      <span><%= booking.checkOut.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                    </div>
+                  </div>
+                  <div class="booking-card-meta">
+                    <span><i class="fas fa-users"></i> <%= booking.guests %> guest<%= booking.guests > 1 ? 's' : '' %></span>
+                    <span class="booking-card-price">₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+                  </div>
+                  <% if (activeTab === 'pending') { %>
+                    <div class="booking-card-actions">
+                      <form action="/dashboard/bookings/<%= booking._id %>/confirm" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm"><i class="fas fa-check"></i> Confirm</button>
+                      </form>
+                      <form action="/dashboard/bookings/<%= booking._id %>/reject" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this booking?')">
+                          <i class="fas fa-times"></i> Reject
+                        </button>
+                      </form>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+<%- include('../partials/footer') %>

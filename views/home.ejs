@@ -1,369 +1,177 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home - UrbanBUNK</title>
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">  
-  </head>
-  <body>
-    <header>
-      <div class="logo">
-        <h1>UrbanBUNK</h1>
-        <p>Your Urban Escape</p>
-      </div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/listings">All Listings</a>
-        <% if (currentUser) { %>
-          <a href="/listings/new">Add Listing</a>
-          <a href="/favorites">My Favorites</a>
-          <a href="/logout">Logout</a>
-          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    </header>
+<%- include('partials/header', { title: 'Home - UrbanBUNK' }) %>
 
     <section class="hero">
       <div class="hero-content">
         <h1>Find your next urban adventure</h1>
         <p>Search deals on hotels, homes, and much more...</p>
         <div class="search-bar">
-          <form class="search-form">
+          <form class="search-form" action="/search" method="GET">
             <div class="search-input">
               <label for="location">Where are you going?</label>
-              <input type="text" id="location" placeholder="Search destinations" list="destinations" />
+              <input type="text" id="location" name="location" placeholder="Search destinations" />
             </div>
             <div class="search-input">
               <label for="checkin">Check-in</label>
-              <input type="date" id="checkin" />
+              <input type="text" id="checkin" name="checkin" placeholder="Add date" />
             </div>
             <div class="search-input">
               <label for="checkout">Check-out</label>
-              <input type="date" id="checkout" />
+              <input type="text" id="checkout" name="checkout" placeholder="Add date" />
             </div>
             <div class="search-input">
               <label for="guests">Guests</label>
-              <select id="guests">
-                <option>1 guest</option>
-                <option>2 guests</option>
-                <option>3 guests</option>
-                <option>4+ guests</option>
+              <select id="guests" name="guests">
+                <option value="">Any</option>
+                <option value="1">1 guest</option>
+                <option value="2">2 guests</option>
+                <option value="3">3 guests</option>
+                <option value="4">4+ guests</option>
               </select>
             </div>
-            <button type="submit" class="search-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <button type="submit" class="search-btn" aria-label="Search">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
           </form>
         </div>
       </div>
       <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Urban cityscape" />
+        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Urban cityscape" />
+      </div>
+    </section>
+
+    <!-- Category Filter Bar -->
+    <section class="category-section">
+      <div class="container">
+        <div class="category-bar">
+          <a href="/listings" class="category-item">
+            <i class="fas fa-globe"></i>
+            <span>All</span>
+          </a>
+          <% 
+            const catIcons = {
+              'Beach': 'fa-umbrella-beach', 'Mountain': 'fa-mountain', 'City': 'fa-city',
+              'Countryside': 'fa-tree', 'Lake': 'fa-water', 'Desert': 'fa-sun',
+              'Island': 'fa-island-tropical', 'Cabin': 'fa-campground'
+            };
+          %>
+          <% categories.forEach(cat => { %>
+            <a href="/listings?category=<%= cat %>" class="category-item">
+              <i class="fas <%= catIcons[cat] || 'fa-tag' %>"></i>
+              <span><%= cat %></span>
+            </a>
+          <% }); %>
+        </div>
       </div>
     </section>
 
     <section class="featured">
       <div class="container">
-        <h2>Popular destinations</h2>
+        <div class="section-header">
+          <h2>Popular Destinations</h2>
+          <p>Hand-picked properties loved by travelers around the world</p>
+        </div>
+        <% if (allListings.length === 0) { %>
+          <div style="text-align:center;padding:40px 0;">
+            <p style="color:var(--text-muted);font-size:16px;">No listings available yet. Be the first to add one!</p>
+          </div>
+        <% } else { %>
         <div class="destinations">
           <% for(let i = 0; i < allListings.length; i++) { %>
-            <div class="destination-card">
-              <% if(allListings[i].image && allListings[i].image.url) { %>
-                <img src="<%= allListings[i].image.url %>" alt="<%= allListings[i].title %>">
-              <% } else if(allListings[i].image && typeof allListings[i].image === 'string') { %>
-                <img src="<%= allListings[i].image %>" alt="<%= allListings[i].title %>">
-              <% } else { %>
-                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= allListings[i].title %>">
-              <% } %>
-              <i class="fas fa-heart favorite-icon" onclick="toggleFavorite('<%= allListings[i]._id %>', this)" data-listing-id="<%= allListings[i]._id %>"></i>
-              <h3><%= allListings[i].title %></h3>
-              <p><%= allListings[i].location %>, <%= allListings[i].country %></p>
-            </div>
+            <a href="/listings/<%= allListings[i]._id %>" class="destination-card" style="text-decoration:none;color:inherit;">
+              <div class="card-image-wrapper">
+                <% if(allListings[i].image && allListings[i].image.url) { %>
+                  <img src="<%= allListings[i].image.url %>" alt="<%= allListings[i].title %>">
+                <% } else if(allListings[i].image && typeof allListings[i].image === 'string') { %>
+                  <img src="<%= allListings[i].image %>" alt="<%= allListings[i].title %>">
+                <% } else { %>
+                  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= allListings[i].title %>">
+                <% } %>
+                <div class="card-overlay"></div>
+                <div class="card-price-tag">₹<%= allListings[i].price ? allListings[i].price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                <% if (allListings[i].category) { %>
+                  <span class="card-category-tag"><%= allListings[i].category %></span>
+                <% } %>
+              </div>
+              <div class="card-body">
+                <h3><%= allListings[i].title %></h3>
+                <p class="card-location"><i class="fas fa-map-marker-alt"></i> <%= allListings[i].location %>, <%= allListings[i].country %></p>
+                <p class="card-desc"><%= allListings[i].description ? allListings[i].description.substring(0, 80) + '...' : '' %></p>
+                <div class="card-footer-row">
+                  <div class="card-tags">
+                    <span class="detail-item"><i class="fas fa-users"></i> <%= allListings[i].maxGuests || 2 %></span>
+                    <span class="detail-item"><i class="fas fa-check-circle"></i> <%= allListings[i].available !== false ? 'Available' : 'Booked' %></span>
+                  </div>
+                  <span class="view-details-link">View Details <i class="fas fa-arrow-right"></i></span>
+                </div>
+              </div>
+            </a>
           <% } %>
         </div>
+        <% } %>
         <div class="view-all">
-          <a href="/listings" class="btn">View All Listings</a>
+          <a href="/listings" class="btn"><i class="fas fa-compass"></i> View All Listings</a>
         </div>
       </div>
-        <option value="Chicago">
-        <option value="Miami">
-        <option value="San Francisco">
-        <option value="Las Vegas">
-        <option value="Seattle">
-        <option value="Boston">
-        <option value="Austin">
-        <option value="Denver">
-      </datalist>
     </section>
 
-    <style>
-      .user-welcome {
-        color: var(--text-secondary);
-        font-size: 14px;
-        font-weight: 500;
-        margin-left: 20px;
-        padding: 8px 16px;
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 20px;
-        border: 1px solid rgba(102, 126, 234, 0.2);
-      }
-    </style>
-  </body>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script>
-    // Enhanced search functionality
-    const locationInput = document.getElementById('location');
-    const checkinInput = document.getElementById('checkin');
-    const checkoutInput = document.getElementById('checkout');
-    const guestsSelect = document.getElementById('guests');
-    const searchForm = document.querySelector('.search-form');
-    
-    // Auto-set minimum dates
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Initialize date pickers with enhanced options
-    flatpickr("#checkin", {
-      dateFormat: "d-m-Y",
-      minDate: today,
-      onChange: function(selectedDates, dateStr, instance) {
-        instance.input.classList.add('date-selected');
-        setTimeout(function() {
-          instance.input.classList.remove('date-selected');
-        }, 500);
-        
-        // Update checkout minimum date
-        if (selectedDates[0]) {
-          checkoutFlatpickr.set('minDate', new Date(selectedDates[0].getTime() + 24 * 60 * 60 * 1000));
-          // Auto-set checkout to next day if not set or before checkin
-          if (!checkoutFlatpickr.selectedDates[0] || checkoutFlatpickr.selectedDates[0] <= selectedDates[0]) {
-            const nextDay = new Date(selectedDates[0].getTime() + 24 * 60 * 60 * 1000);
-            checkoutFlatpickr.setDate(nextDay);
+    <!-- Why UrbanBUNK Section -->
+    <section class="trust-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Why UrbanBUNK?</h2>
+          <p>Trusted by thousands of travelers worldwide</p>
+        </div>
+        <div class="trust-grid">
+          <div class="trust-card">
+            <div class="trust-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Verified Properties</h3>
+            <p>Every listing is verified by our team to ensure quality and safety standards</p>
+          </div>
+          <div class="trust-card">
+            <div class="trust-icon"><i class="fas fa-headset"></i></div>
+            <h3>24/7 Support</h3>
+            <p>Our dedicated support team is available around the clock for any assistance</p>
+          </div>
+          <div class="trust-card">
+            <div class="trust-icon"><i class="fas fa-lock"></i></div>
+            <h3>Secure Booking</h3>
+            <p>Your payments and personal information are protected with top-tier security</p>
+          </div>
+          <div class="trust-card">
+            <div class="trust-icon"><i class="fas fa-undo"></i></div>
+            <h3>Free Cancellation</h3>
+            <p>Plans change — enjoy flexible cancellation on most properties</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      flatpickr("#checkin", {
+        dateFormat: "Y-m-d",
+        minDate: today,
+        onChange: function(selectedDates) {
+          if (selectedDates[0]) {
+            checkoutPicker.set('minDate', new Date(selectedDates[0].getTime() + 86400000));
+            if (!checkoutPicker.selectedDates[0] || checkoutPicker.selectedDates[0] <= selectedDates[0]) {
+              checkoutPicker.setDate(new Date(selectedDates[0].getTime() + 86400000));
+            }
           }
         }
-      }
-    });
-    
-    const checkoutFlatpickr = flatpickr("#checkout", {
-      dateFormat: "d-m-Y",
-      minDate: tomorrow,
-      onChange: function(selectedDates, dateStr, instance) {
-        instance.input.classList.add('date-selected');
-        setTimeout(function() {
-          instance.input.classList.remove('date-selected');
-        }, 500);
-      }
-    });
-    
-    // Enhanced location search with autocomplete
-    locationInput.addEventListener('input', function(e) {
-      const value = e.target.value.toLowerCase();
-      if (value.length > 2) {
-        // Add search suggestions functionality
-        console.log('Searching for:', value);
-      }
-    });
-    
-    // Form submission with validation
-    searchForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const location = locationInput.value.trim();
-      const checkin = checkinInput.value;
-      const checkout = checkoutInput.value;
-      const guests = guestsSelect.value;
-      
-      if (!location) {
-        showError(locationInput, 'Please enter a destination');
-        return;
-      }
-      
-      if (!checkin || !checkout) {
-        if (!checkin) showError(checkinInput, 'Please select check-in date');
-        if (!checkout) showError(checkoutInput, 'Please select check-out date');
-        return;
-      }
-      
-      // Build search query
-      const searchParams = new URLSearchParams({
-        location: location,
-        checkin: checkin,
-        checkout: checkout,
-        guests: guests
       });
-      
-      // Redirect to search results
-      console.log('Searching with params:', searchParams.toString());
-      window.location.href = `/search?${searchParams.toString()}`;
-    });
-    
-    function showError(input, message) {
-      input.style.borderColor = '#ef4444';
-      input.setAttribute('title', message);
-      setTimeout(() => {
-        input.style.borderColor = '';
-        input.removeAttribute('title');
-      }, 3000);
-    }
-    
-    // Add hover effects for search inputs
-    document.querySelectorAll('.search-input').forEach(input => {
-      input.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.02)';
+
+      const checkoutPicker = flatpickr("#checkout", {
+        dateFormat: "Y-m-d",
+        minDate: tomorrow
       });
-      input.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1)';
-      });
-    });
+    </script>
 
-    // Favorites functionality
-    async function toggleFavorite(listingId, element) {
-      try {
-        const isFavorited = element.classList.contains('favorited');
-        
-        if (isFavorited) {
-          // Remove from favorites
-          const response = await fetch(`/favorites/by-listing/${listingId}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
-          
-          if (response.ok) {
-            element.classList.remove('favorited');
-            element.style.color = 'rgba(255, 255, 255, 0.8)';
-            showNotification('Removed from favorites', 'success');
-          } else {
-            showNotification('Error removing favorite', 'error');
-          }
-        } else {
-          // Add to favorites
-          const response = await fetch(`/favorites/${listingId}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
-          
-          if (response.status === 201) {
-            element.classList.add('favorited');
-            element.style.color = '#ff385c';
-            showNotification('Added to favorites', 'success');
-          } else if (response.status === 400) {
-            const errorData = await response.json();
-            showNotification(errorData.message || 'Already in favorites', 'warning');
-          } else {
-            showNotification('Error adding favorite', 'error');
-          }
-        }
-      } catch (error) {
-        console.error('Error toggling favorite:', error);
-        showNotification('Network error. Please try again.', 'error');
-      }
-    }
-
-    // Show notification function
-    function showNotification(message, type = 'info') {
-      // Remove any existing notifications
-      const existingNotification = document.querySelector('.notification');
-      if (existingNotification) {
-        existingNotification.remove();
-      }
-
-      // Create notification element
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.textContent = message;
-      
-      // Add styles
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 10000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      `;
-      
-      // Set background color based on type
-      switch(type) {
-        case 'success':
-          notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-          break;
-        case 'error':
-          notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-          break;
-        case 'warning':
-          notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-          break;
-        default:
-          notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
-      }
-      
-      document.body.appendChild(notification);
-      
-      // Animate in
-      setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-      }, 100);
-      
-      // Remove after 3 seconds
-      setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.remove();
-          }
-        }, 300);
-      }, 3000);
-    }
-
-    // Check if listings are favorited on page load
-    async function checkFavoriteStatus() {
-      const favoriteIcons = document.querySelectorAll('.favorite-icon');
-      for (const icon of favoriteIcons) {
-        const listingId = icon.getAttribute('data-listing-id');
-        if (listingId) {
-          try {
-            const response = await fetch(`/favorites/check/${listingId}`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.isFavorited) {
-                icon.classList.add('favorited');
-                icon.style.color = '#ff385c';
-              }
-            }
-          } catch (error) {
-            console.error('Error checking favorite status:', error);
-          }
-        }
-      }
-    }
-
-    // Initialize favorite status on page load
-    checkFavoriteStatus();
-
-    // Add event listeners for favorite icons
-    document.querySelectorAll('.favorite-icon').forEach(icon => {
-      icon.addEventListener('click', function() {
-        const listingId = icon.getAttribute('data-listing-id');
-        toggleFavorite(listingId, icon);
-      });
-    });
-  </script>
-</html>
+<%- include('partials/footer') %>

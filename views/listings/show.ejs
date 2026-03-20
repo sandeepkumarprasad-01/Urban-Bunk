@@ -1,57 +1,354 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= listing.title %> - UrbanBUNK</title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <header>
-      <div class="logo">UrbanBUNK</div>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/listings">All Listings</a>
-        <% if (currentUser) { %>
-          <a href="/listings/new">Add Listing</a>
-          <a href="/favorites">My Favorites</a>
-          <a href="/logout">Logout</a>
-          <span class="user-welcome">Welcome, <%= currentUser.username %></span>
-        <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    </header>
-    <div class="container">
-      <div class="show-container">
+<%- include('../partials/header', { title: listing.title + ' - UrbanBUNK' }) %>
+
+    <!-- Show Page Hero -->
+    <div class="show-page">
+      <div class="show-hero-banner">
         <% if(listing.image && listing.image.url) { %>
-          <img src="<%= listing.image.url %>" alt="<%= listing.title %>" class="show-image" />
+          <img src="<%= listing.image.url %>" alt="<%= listing.title %>" />
         <% } else if(listing.image && typeof listing.image === 'string') { %>
-          <img src="<%= listing.image %>" alt="<%= listing.title %>" class="show-image" />
+          <img src="<%= listing.image %>" alt="<%= listing.title %>" />
         <% } else { %>
-          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="<%= listing.title %>" class="show-image" />
+          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="<%= listing.title %>" />
         <% } %>
-        <div class="show-content">
-          <h1><%= listing.title %></h1>
-          <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
-          <p><strong>Price:</strong> ₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %> / night</p>
-          <p><strong>Description:</strong> <%= listing.description %></p>
-          <% if(listing.maxGuests) { %>
-            <p><strong>Max Guests:</strong> <%= listing.maxGuests %></p>
-          <% } %>
-          <% if(listing.available !== undefined) { %>
-            <p><strong>Availability:</strong> <%= listing.available ? 'Available' : 'Not Available' %></p>
-          <% } %>
-          <div class="actions">
-            <a href="/listings/<%= listing._id %>/edit" class="btn">Edit</a>
-            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" style="display: inline;">
-              <button type="submit" class="btn" onclick="return confirm('Are you sure you want to delete this listing?')">Delete</button>
-            </form>
-            <a href="/listings" class="btn">Back to Listings</a>
+        <div class="show-hero-overlay"></div>
+        <div class="show-hero-content">
+          <a href="/listings" class="show-back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+          <div class="show-hero-info">
+            <div class="show-hero-badges">
+              <% if (listing.category) { %>
+                <span class="category-badge"><i class="fas fa-tag"></i> <%= listing.category %></span>
+              <% } %>
+              <% if (listing.propertyType) { %>
+                <span class="property-type-badge"><i class="fas fa-building"></i> <%= listing.propertyType %></span>
+              <% } %>
+            </div>
+            <h1><%= listing.title %></h1>
+            <p class="show-hero-location"><i class="fas fa-map-marker-alt"></i> <%= listing.location %>, <%= listing.country %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="show-body container">
+        <div class="show-grid">
+          <!-- Main Info Column -->
+          <div class="show-main">
+            <!-- Quick Stats -->
+            <div class="show-stats-row">
+              <div class="show-stat">
+                <i class="fas fa-users"></i>
+                <div>
+                  <span class="stat-number"><%= listing.maxGuests || 2 %></span>
+                  <span class="stat-label">Max Guests</span>
+                </div>
+              </div>
+              <div class="show-stat">
+                <i class="fas fa-<%= listing.available !== false ? 'check-circle' : 'times-circle' %>"></i>
+                <div>
+                  <span class="stat-number"><%= listing.available !== false ? 'Yes' : 'No' %></span>
+                  <span class="stat-label">Available</span>
+                </div>
+              </div>
+              <% if(listing.owner) { %>
+              <div class="show-stat">
+                <i class="fas fa-user"></i>
+                <div>
+                  <span class="stat-number"><%= listing.owner.username || 'Host' %></span>
+                  <span class="stat-label">Hosted by</span>
+                </div>
+              </div>
+              <% } %>
+              <% if (avgRating) { %>
+              <div class="show-stat">
+                <i class="fas fa-star" style="color:#f59e0b;"></i>
+                <div>
+                  <span class="stat-number"><%= avgRating %></span>
+                  <span class="stat-label"><%= reviews.length %> review<%= reviews.length !== 1 ? 's' : '' %></span>
+                </div>
+              </div>
+              <% } %>
+            </div>
+
+            <!-- About Section -->
+            <div class="show-section">
+              <h2><i class="fas fa-info-circle"></i> About this place</h2>
+              <p class="show-description"><%= listing.description %></p>
+            </div>
+
+            <!-- Amenities -->
+            <div class="show-section">
+              <h2><i class="fas fa-star"></i> What this place offers</h2>
+              <div class="amenities-grid">
+                <% 
+                  const amenityIcons = {
+                    'WiFi': 'fa-wifi', 'Air Conditioning': 'fa-snowflake', 'Smart TV': 'fa-tv',
+                    'Kitchen': 'fa-utensils', 'Free Parking': 'fa-car', 'Pool Access': 'fa-swimming-pool',
+                    '24/7 Security': 'fa-shield-alt', 'Pet Friendly': 'fa-paw', 'Gym': 'fa-dumbbell',
+                    'Washer': 'fa-tshirt', 'Dryer': 'fa-wind', 'Heating': 'fa-fire',
+                    'Workspace': 'fa-laptop', 'Balcony': 'fa-door-open', 'Garden': 'fa-leaf',
+                    'BBQ': 'fa-fire-alt', 'Hot Tub': 'fa-hot-tub', 'Fireplace': 'fa-fire'
+                  };
+                  const amenities = listing.amenities && listing.amenities.length > 0 
+                    ? listing.amenities 
+                    : ['WiFi', 'Air Conditioning', 'Smart TV', 'Kitchen', 'Free Parking', 'Pool Access'];
+                %>
+                <% amenities.forEach(amenity => { %>
+                  <div class="amenity-item">
+                    <i class="fas <%= amenityIcons[amenity] || 'fa-check' %>"></i> <%= amenity %>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="show-section">
+              <h2><i class="fas fa-map"></i> Location</h2>
+              <div class="location-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                  <strong><%= listing.location %></strong>
+                  <span><%= listing.country %></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="show-section">
+              <h2><i class="fas fa-comments"></i> Reviews <% if (reviews.length > 0) { %><span class="review-count">(<%= reviews.length %>)</span><% } %></h2>
+              
+              <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+                <% const hasReviewed = reviews.some(r => r.user && r.user._id.toString() === currentUser._id.toString()); %>
+                <% if (!hasReviewed) { %>
+                  <div class="review-form-card">
+                    <h3>Write a Review</h3>
+                    <form action="/listings/<%= listing._id %>/reviews" method="POST" class="review-form">
+                      <div class="star-rating-input">
+                        <input type="radio" id="star5" name="rating" value="5"><label for="star5"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star4" name="rating" value="4"><label for="star4"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star3" name="rating" value="3" checked><label for="star3"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star2" name="rating" value="2"><label for="star2"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star1" name="rating" value="1"><label for="star1"><i class="fas fa-star"></i></label>
+                      </div>
+                      <textarea name="comment" placeholder="Share your experience..." required maxlength="1000" rows="3"></textarea>
+                      <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Submit Review</button>
+                    </form>
+                  </div>
+                <% } %>
+              <% } else { %>
+                <p class="login-to-review"><a href="/login">Sign in</a> to leave a review</p>
+              <% } %>
+
+              <% if (reviews.length === 0) { %>
+                <p class="no-reviews">No reviews yet. Be the first to review!</p>
+              <% } else { %>
+                <div class="reviews-list">
+                  <% reviews.forEach(review => { %>
+                    <div class="review-card">
+                      <div class="review-header">
+                        <div class="review-user">
+                          <span class="review-avatar"><%= review.user ? review.user.username.charAt(0).toUpperCase() : '?' %></span>
+                          <div>
+                            <strong><%= review.user ? review.user.username : 'Anonymous' %></strong>
+                            <span class="review-date"><%= review.createdAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                          </div>
+                        </div>
+                        <div class="review-stars">
+                          <% for (let i = 1; i <= 5; i++) { %>
+                            <i class="fas fa-star <%= i <= review.rating ? 'star-filled' : 'star-empty' %>"></i>
+                          <% } %>
+                        </div>
+                      </div>
+                      <p class="review-comment"><%= review.comment %></p>
+                      <% if (typeof currentUser !== 'undefined' && currentUser && review.user && currentUser._id.toString() === review.user._id.toString()) { %>
+                        <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>/delete" method="POST" class="delete-review-form">
+                          <button type="submit" class="btn-text-danger" onclick="return confirm('Delete your review?')">
+                            <i class="fas fa-trash"></i> Delete
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
+                  <% }); %>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Owner Actions -->
+            <% if(typeof currentUser !== 'undefined' && currentUser && listing.owner && listing.owner._id && currentUser._id.toString() === listing.owner._id.toString()) { %>
+            <div class="show-section show-owner-actions">
+              <h2><i class="fas fa-cog"></i> Manage Listing</h2>
+              <div class="owner-action-btns">
+                <a href="/listings/<%= listing._id %>/edit" class="btn"><i class="fas fa-edit"></i> Edit Listing</a>
+                <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" style="display:inline;">
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this listing?')"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+              </div>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Booking Sidebar -->
+          <div class="show-sidebar">
+            <div class="booking-card">
+              <div class="booking-price">
+                <span class="booking-amount">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %></span>
+                <span class="booking-per">/ night</span>
+              </div>
+              
+              <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+                <form action="/bookings/<%= listing._id %>" method="POST" id="bookingForm">
+                  <div class="booking-dates">
+                    <div class="booking-date-input">
+                      <label><i class="fas fa-calendar-check"></i> Check-in</label>
+                      <input type="date" id="booking-checkin" name="checkIn" required />
+                    </div>
+                    <div class="booking-date-input">
+                      <label><i class="fas fa-calendar-times"></i> Check-out</label>
+                      <input type="date" id="booking-checkout" name="checkOut" required />
+                    </div>
+                  </div>
+
+                  <div class="booking-guests-input">
+                    <label><i class="fas fa-users"></i> Guests</label>
+                    <select name="guests" required>
+                      <% for(let g = 1; g <= (listing.maxGuests || 4); g++) { %>
+                        <option value="<%= g %>"><%= g %> guest<%= g > 1 ? 's' : '' %></option>
+                      <% } %>
+                    </select>
+                  </div>
+
+                  <div class="booking-summary" id="bookingSummary" style="display:none;">
+                    <div class="summary-row">
+                      <span>₹<%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %> × <span id="nightCount">0</span> nights</span>
+                      <span id="totalPrice">₹0</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                      <strong>Total</strong>
+                      <strong id="grandTotal">₹0</strong>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn booking-btn" id="reserveBtn" <%= listing.available === false ? 'disabled' : '' %>>
+                    <i class="fas fa-bolt"></i> <%= listing.available !== false ? 'Reserve Now' : 'Not Available' %>
+                  </button>
+                </form>
+              <% } else { %>
+                <div class="booking-dates">
+                  <div class="booking-date-input">
+                    <label><i class="fas fa-calendar-check"></i> Check-in</label>
+                    <input type="date" id="booking-checkin" />
+                  </div>
+                  <div class="booking-date-input">
+                    <label><i class="fas fa-calendar-times"></i> Check-out</label>
+                    <input type="date" id="booking-checkout" />
+                  </div>
+                </div>
+
+                <div class="booking-guests-input">
+                  <label><i class="fas fa-users"></i> Guests</label>
+                  <select>
+                    <% for(let g = 1; g <= (listing.maxGuests || 4); g++) { %>
+                      <option value="<%= g %>"><%= g %> guest<%= g > 1 ? 's' : '' %></option>
+                    <% } %>
+                  </select>
+                </div>
+
+                <div class="booking-summary" id="bookingSummary" style="display:none;">
+                  <div class="summary-row">
+                    <span>₹<%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %> × <span id="nightCount">0</span> nights</span>
+                    <span id="totalPrice">₹0</span>
+                  </div>
+                  <div class="summary-row summary-total">
+                    <strong>Total</strong>
+                    <strong id="grandTotal">₹0</strong>
+                  </div>
+                </div>
+
+                <a href="/login" class="btn booking-btn" style="text-align:center;">
+                  <i class="fas fa-sign-in-alt"></i> Sign In to Book
+                </a>
+              <% } %>
+
+              <p class="booking-note">You won't be charged yet</p>
+            </div>
+
+            <!-- Share & Save -->
+            <div class="share-save-row">
+              <button class="share-btn" onclick="navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!'))">
+                <i class="fas fa-share-alt"></i> Share
+              </button>
+              <button class="save-btn" id="favBtn" onclick="toggleFav()">
+                <i class="fas fa-heart"></i> Save
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </body>
-</html>
+
+    <script>
+      // Calculate booking price
+      const price = <%= listing.price || 0 %>;
+      const checkinInput = document.getElementById('booking-checkin');
+      const checkoutInput = document.getElementById('booking-checkout');
+
+      // Set min dates
+      const today = new Date().toISOString().split('T')[0];
+      if (checkinInput) checkinInput.min = today;
+
+      function calculatePrice() {
+        if (checkinInput && checkoutInput && checkinInput.value && checkoutInput.value) {
+          const d1 = new Date(checkinInput.value);
+          const d2 = new Date(checkoutInput.value);
+          const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+          if (diff > 0) {
+            document.getElementById('bookingSummary').style.display = 'block';
+            document.getElementById('nightCount').textContent = diff;
+            const total = price * diff;
+            document.getElementById('totalPrice').textContent = '₹' + total.toLocaleString('en-IN');
+            document.getElementById('grandTotal').textContent = '₹' + total.toLocaleString('en-IN');
+          } else {
+            document.getElementById('bookingSummary').style.display = 'none';
+          }
+        }
+      }
+
+      if (checkinInput) {
+        checkinInput.addEventListener('change', function() {
+          if (this.value) {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkoutInput.min = nextDay.toISOString().split('T')[0];
+            if (checkoutInput.value && new Date(checkoutInput.value) <= new Date(this.value)) {
+              checkoutInput.value = nextDay.toISOString().split('T')[0];
+            }
+          }
+          calculatePrice();
+        });
+      }
+      if (checkoutInput) checkoutInput.addEventListener('change', calculatePrice);
+
+      // Favorite toggle
+      async function toggleFav() {
+        const btn = document.getElementById('favBtn');
+        const id = '<%= listing._id %>';
+        const isFav = btn.classList.contains('saved');
+        try {
+          if (isFav) {
+            const res = await fetch('/favorites/by-listing/' + id, { method: 'DELETE' });
+            if (res.ok) btn.classList.remove('saved');
+          } else {
+            const res = await fetch('/favorites/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            if (res.status === 201) btn.classList.add('saved');
+          }
+        } catch(e) { console.error(e); }
+      }
+
+      // Check if favorited on load
+      (async () => {
+        try {
+          const res = await fetch('/favorites/check/<%= listing._id %>');
+          if (res.ok) { const d = await res.json(); if (d.isFavorited) document.getElementById('favBtn').classList.add('saved'); }
+        } catch(e) {}
+      })();
+    </script>
+
+<%- include('../partials/footer') %>

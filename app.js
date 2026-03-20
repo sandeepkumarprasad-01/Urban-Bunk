@@ -1,189 +1,388 @@
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require("express");
-
 const app = express();
-const PORT = 8080;
+const mongoose = require("mongoose");
+const Listing = require("./models/listing.js");
+const Favorite = require("./models/favorite.js");
+const Review = require("./models/Review.js");
+const path = require("path");
+const methodOverride = require("method-override");
+const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
+const passport = require("passport");
+const flash = require("connect-flash");
 
-// Configuration
-require("./config/middleware")(app);
-require("./config/auth-setup")(app);
-require("./config/routes")(app);
+// Import authentication configuration
+require("./config/passport")(passport);
 
-// Sample data route for Atlas
-app.get("/seed", async (req, res) => {
+// Import routes and middleware
+const authRoutes = require("./routes/auth");
+const bookingsRoutes = require("./routes/bookings.routes");
+const reviewsRoutes = require("./routes/reviews.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
+const { isAuthenticated, isOwner } = require("./middleware/auth");
+
+const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust";
+
+main()
+  .then(() => {
+    console.log("connected to DB");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+async function main() {
+  await mongoose.connect(MONGO_URL);
+}
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this-in-production',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: MONGO_URL,
+    touchAfter: 24 * 3600,
+  }),
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
+}));
+
+// Flash messages
+app.use(flash());
+
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Make user and flash messages available to all templates
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  res.locals.error = req.flash('error');
+  res.locals.success = req.flash('success');
+  next();
+});
+
+// Use routes
+app.use("/", authRoutes);
+app.use("/", bookingsRoutes);
+app.use("/", reviewsRoutes);
+app.use("/", dashboardRoutes);
+
+// Home page
+app.get("/", async (req, res) => {
   try {
-    const Listing = require("./models/listing");
+    const allListings = await Listing.find({});
+    const randomListings = [];
     
-    // Clear existing data
-    await Listing.deleteMany({});
+    if (allListings.length > 0) {
+      const shuffled = [...allListings].sort(() => 0.5 - Math.random());
+      randomListings.push(...shuffled.slice(0, 6));
+    }
     
-    // Add comprehensive sample listings
-    const sampleListings = [
-      {
-        title: "Beach Villa Paradise",
-        description: "Luxurious beachfront villa with stunning ocean views and private beach access",
-        image: { 
-          url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "beach-villa.jpg" 
-        },
-        price: 150, 
-        location: "Miami Beach", 
-        country: "USA", 
-        maxGuests: 4, 
-        available: true,
-        checkin: new Date('2024-12-15'), 
-        checkout: new Date('2025-02-15')
-      },
-      {
-        title: "Mountain Retreat Cabin",
-        description: "Cozy mountain cabin perfect for winter getaways with fireplace and hot tub",
-        image: { 
-          url: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "mountain-cabin.jpg" 
-        },
-        price: 120, 
-        location: "Aspen", 
-        country: "USA", 
-        maxGuests: 6, 
-        available: true,
-        checkin: new Date('2024-12-20'), 
-        checkout: new Date('2025-03-20')
-      },
-      {
-        title: "City Loft Downtown",
-        description: "Modern downtown loft with city views and walking distance to attractions",
-        image: { 
-          url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "city-loft.jpg" 
-        },
-        price: 95, 
-        location: "New York", 
-        country: "USA", 
-        maxGuests: 2, 
-        available: true,
-        checkin: new Date('2025-01-01'), 
-        checkout: new Date('2025-06-01')
-      },
-      {
-        title: "Desert Luxury Resort",
-        description: "Luxury desert resort with pool, spa, and world-class golf course",
-        image: { 
-          url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "desert-resort.jpg" 
-        },
-        price: 200, 
-        location: "Las Vegas", 
-        country: "USA", 
-        maxGuests: 8, 
-        available: true,
-        checkin: new Date('2025-01-15'), 
-        checkout: new Date('2025-04-15')
-      },
-      {
-        title: "Lakefront Cottage",
-        description: "Peaceful lakefront property with private dock and beautiful sunset views",
-        image: { 
-          url: "https://images.unsplash.com/photo-1514565131-fce0801e5785?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "lake-cottage.jpg" 
-        },
-        price: 180, 
-        location: "Lake Tahoe", 
-        country: "USA", 
-        maxGuests: 5, 
-        available: false,
-        checkin: new Date('2024-11-01'), 
-        checkout: new Date('2025-01-31')
-      },
-      {
-        title: "Tropical Beach Bungalow",
-        description: "Cozy beach bungalow surrounded by palm trees and crystal clear waters",
-        image: { 
-          url: "https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "tropical-bungalow.jpg" 
-        },
-        price: 85, 
-        location: "Maui", 
-        country: "USA", 
-        maxGuests: 3, 
-        available: true,
-        checkin: new Date('2025-02-01'), 
-        checkout: new Date('2025-05-01')
-      },
-      {
-        title: "Urban Penthouse Suite",
-        description: "Luxurious penthouse with panoramic city views and rooftop terrace",
-        image: { 
-          url: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "penthouse-suite.jpg" 
-        },
-        price: 350, 
-        location: "San Francisco", 
-        country: "USA", 
-        maxGuests: 4, 
-        available: true,
-        checkin: new Date('2025-03-01'), 
-        checkout: new Date('2025-08-01')
-      },
-      {
-        title: "Countryside Farmhouse",
-        description: "Charming farmhouse surrounded by rolling hills and organic gardens",
-        image: { 
-          url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "farmhouse.jpg" 
-        },
-        price: 75, 
-        location: "Nashville", 
-        country: "USA", 
-        maxGuests: 6, 
-        available: true,
-        checkin: new Date('2025-04-01'), 
-        checkout: new Date('2025-09-01')
-      },
-      {
-        title: "Secluded Forest Cabin",
-        description: "Private cabin nestled in the forest with hiking trails and wildlife viewing",
-        image: { 
-          url: "https://images.unsplash.com/photo-1518780664697-55e3189dbe39?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "forest-cabin.jpg" 
-        },
-        price: 65, 
-        location: "Portland", 
-        country: "USA", 
-        maxGuests: 2, 
-        available: true,
-        checkin: new Date('2025-05-01'), 
-        checkout: new Date('2025-10-01')
-      },
-      {
-        title: "Beachfront Condo",
-        description: "Modern beachfront condo with ocean views and resort amenities",
-        image: { 
-          url: "https://images.unsplash.com/photo-1445068651481-c3c1c6e6b5a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60", 
-          filename: "beachfront-condo.jpg" 
-        },
-        price: 110, 
-        location: "San Diego", 
-        country: "USA", 
-        maxGuests: 4, 
-        available: true,
-        checkin: new Date('2025-06-01'), 
-        checkout: new Date('2025-11-01')
-      }
-    ];
-
-    await Listing.insertMany(sampleListings);
-    console.log(`✅ ${sampleListings.length} sample listings added to Atlas!`);
-    res.send(`✅ ${sampleListings.length} sample listings added to MongoDB Atlas! Visit <a href='/'>home</a> or <a href='/listings'>listings</a>`);
+    res.render("home.ejs", { allListings: randomListings, categories: Listing.CATEGORIES });
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).send('❌ Error adding sample data');
+    console.error("Error fetching listings for home:", error);
+    res.render("home.ejs", { allListings: [], categories: Listing.CATEGORIES });
   }
 });
 
-// Database connection and server start
-const connectDB = require("./config/database");
-connectDB().then(() => {
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-}).catch(err => {
-  console.error("Failed to start server:", err);
-  process.exit(1);
+// Listings Index — supports category filtering and sorting
+app.get("/listings", async (req, res) => {
+  try {
+    const { category, sort } = req.query;
+    let query = {};
+    
+    if (category && Listing.CATEGORIES.includes(category)) {
+      query.category = category;
+    }
+
+    let sortOption = {};
+    if (sort === 'price_low') sortOption = { price: 1 };
+    else if (sort === 'price_high') sortOption = { price: -1 };
+    else sortOption = { _id: -1 }; // newest first
+
+    const allListings = await Listing.find(query).sort(sortOption);
+    res.render("listings/index.ejs", { 
+      allListings, 
+      categories: Listing.CATEGORIES,
+      activeCategory: category || '',
+      activeSort: sort || 'newest'
+    });
+  } catch (error) {
+    console.error('Listings error:', error);
+    res.render("listings/index.ejs", { 
+      allListings: [], 
+      categories: Listing.CATEGORIES,
+      activeCategory: '',
+      activeSort: 'newest'
+    });
+  }
+});
+
+// New Route - Protected
+app.get("/listings/new", isAuthenticated, (req, res) => {
+  res.render("listings/new.ejs", {
+    categories: Listing.CATEGORIES,
+    propertyTypes: Listing.PROPERTY_TYPES
+  });
+});
+
+// Show Route
+app.get("/listings/:id", async (req, res) => {
+  try {
+    let { id } = req.params;
+    const listing = await Listing.findById(id).populate('owner');
+    
+    if (!listing) {
+      req.flash('error', 'Listing not found');
+      return res.redirect('/listings');
+    }
+
+    // Get reviews for this listing
+    const reviews = await Review.find({ listing: id })
+      .populate('user')
+      .sort({ createdAt: -1 });
+
+    // Calculate average rating
+    const avgRating = reviews.length > 0 
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) 
+      : null;
+
+    res.render("listings/show.ejs", { listing, reviews, avgRating });
+  } catch (error) {
+    console.error('Show listing error:', error);
+    req.flash('error', 'Something went wrong');
+    res.redirect('/listings');
+  }
+});
+
+// Create Route - Protected
+app.post("/listings", isAuthenticated, async (req, res) => {
+  try {
+    const listingData = req.body.listing;
+    
+    // Handle image field
+    if (listingData.image && typeof listingData.image === 'string') {
+      listingData.image = {
+        url: listingData.image,
+        filename: listingData.image.split('/').pop() || 'image.jpg'
+      };
+    }
+    
+    // Set owner
+    listingData.owner = req.user._id;
+    
+    // Handle amenities (comes as comma-separated or array)
+    if (listingData.amenities && typeof listingData.amenities === 'string') {
+      listingData.amenities = listingData.amenities.split(',').map(a => a.trim()).filter(a => a);
+    }
+    
+    const newListing = new Listing(listingData);
+    
+    if (listingData.checkin) newListing.checkin = new Date(listingData.checkin);
+    if (listingData.checkout) newListing.checkout = new Date(listingData.checkout);
+    newListing.available = listingData.available === 'true';
+    
+    await newListing.save();
+    req.flash('success', 'Listing created successfully!');
+    res.redirect("/listings");
+  } catch (error) {
+    console.error('Error creating listing:', error);
+    req.flash('error', 'Error creating listing');
+    res.redirect("/listings/new");
+  }
+});
+
+// Edit Route - Protected (owner only)
+app.get("/listings/:id/edit", isOwner, async (req, res) => {
+  let { id } = req.params;
+  const listing = await Listing.findById(id);
+  res.render("listings/edit.ejs", { 
+    listing,
+    categories: Listing.CATEGORIES,
+    propertyTypes: Listing.PROPERTY_TYPES
+  });
+});
+
+// Update Route - Protected (owner only)
+app.put("/listings/:id", isOwner, async (req, res) => {
+  try {
+    let { id } = req.params;
+    const updateData = { ...req.body.listing };
+    
+    if (updateData.image && typeof updateData.image === 'string') {
+      updateData.image = {
+        url: updateData.image,
+        filename: updateData.image.split('/').pop() || 'image.jpg'
+      };
+    }
+    
+    // Handle amenities
+    if (updateData.amenities && typeof updateData.amenities === 'string') {
+      updateData.amenities = updateData.amenities.split(',').map(a => a.trim()).filter(a => a);
+    }
+    
+    if (updateData.checkin) updateData.checkin = new Date(updateData.checkin);
+    if (updateData.checkout) updateData.checkout = new Date(updateData.checkout);
+    updateData.available = updateData.available === 'true';
+    
+    await Listing.findByIdAndUpdate(id, updateData);
+    req.flash('success', 'Listing updated successfully!');
+    res.redirect(`/listings/${id}`);
+  } catch (error) {
+    console.error('Error updating listing:', error);
+    req.flash('error', 'Error updating listing');
+    res.redirect(`/listings/${req.params.id}/edit`);
+  }
+});
+
+// Delete Route - Protected (owner only)
+app.delete("/listings/:id", isOwner, async (req, res) => {
+  let { id } = req.params;
+  await Listing.findByIdAndDelete(id);
+  req.flash('success', 'Listing deleted');
+  res.redirect("/listings");
+});
+
+// ============ FAVORITES (User-specific) ============
+
+app.get("/favorites", isAuthenticated, async (req, res) => {
+  try {
+    const favorites = await Favorite.find({ userId: req.user._id })
+      .populate('listingId')
+      .sort({ addedAt: -1 });
+    
+    const transformedFavorites = favorites.map(fav => ({
+      ...fav.toObject(),
+      listing: fav.listingId
+    }));
+    
+    res.render("favorites", { favorites: transformedFavorites });
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).send('Error fetching favorites');
+  }
+});
+
+app.post("/favorites/:listingId", isAuthenticated, async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    
+    const existingFavorite = await Favorite.findOne({ userId: req.user._id, listingId });
+    if (existingFavorite) {
+      return res.status(400).json({ message: 'Already in favorites' });
+    }
+    
+    const favorite = new Favorite({ userId: req.user._id, listingId });
+    await favorite.save();
+    
+    res.status(201).json({ message: 'Added to favorites', favorite });
+  } catch (error) {
+    console.error('Error adding favorite:', error);
+    res.status(500).json({ message: 'Error adding favorite' });
+  }
+});
+
+app.get("/favorites/check/:listingId", async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    if (!req.user) {
+      return res.json({ isFavorited: false });
+    }
+    const favorite = await Favorite.findOne({ userId: req.user._id, listingId });
+    res.json({ isFavorited: !!favorite });
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    res.status(500).json({ message: 'Error checking favorite status' });
+  }
+});
+
+app.delete("/favorites/by-listing/:listingId", isAuthenticated, async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    await Favorite.deleteOne({ userId: req.user._id, listingId });
+    res.status(200).json({ message: 'Removed from favorites' });
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    res.status(500).json({ message: 'Error removing favorite' });
+  }
+});
+
+app.delete("/favorites/:favoriteId", isAuthenticated, async (req, res) => {
+  try {
+    const { favoriteId } = req.params;
+    await Favorite.findOneAndDelete({ _id: favoriteId, userId: req.user._id });
+    res.status(200).json({ message: 'Removed from favorites' });
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    res.status(500).json({ message: 'Error removing favorite' });
+  }
+});
+
+// Search Route
+app.get("/search", async (req, res) => {
+  try {
+    const { location, checkin, checkout, guests } = req.query;
+    
+    let searchQuery = { available: true };
+    
+    if (location) {
+      searchQuery.$or = [
+        { location: { $regex: location, $options: 'i' } },
+        { country: { $regex: location, $options: 'i' } },
+        { title: { $regex: location, $options: 'i' } }
+      ];
+    }
+    
+    if (guests) {
+      const guestCount = parseInt(guests);
+      if (!isNaN(guestCount)) {
+        searchQuery.maxGuests = { $gte: guestCount };
+      }
+    }
+    
+    if (checkin && checkout) {
+      const checkinDate = new Date(checkin);
+      const checkoutDate = new Date(checkout);
+      
+      searchQuery.$and = searchQuery.$and || [];
+      searchQuery.$and.push(
+        {
+          $or: [
+            { checkin: { $lte: checkinDate }, checkout: { $gte: checkoutDate } },
+            { checkin: { $gte: checkinDate, $lte: checkoutDate } },
+            { checkout: { $gte: checkinDate, $lte: checkoutDate } }
+          ]
+        }
+      );
+    }
+    
+    const searchResults = await Listing.find(searchQuery);
+    
+    res.render("search/results", { 
+      searchResults, 
+      searchQuery: { location, checkin, checkout, guests },
+      totalResults: searchResults.length
+    });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).send('Search error');
+  }
+});
+
+app.listen(8080, () => {
+  console.log("server is listening to port 8080");
 });

@@ -1,0 +1,87 @@
+    <footer>
+      <div class="footer-gradient-bar"></div>
+      <div class="footer-content">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <h2>Urban<span>BUNK</span></h2>
+            <p>Discover extraordinary stays around the world. From cozy cabins to luxury villas, find your perfect escape.</p>
+            <div class="footer-socials">
+              <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+              <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+              <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+          </div>
+          <div class="footer-links">
+            <h3>Explore</h3>
+            <a href="/">Home</a>
+            <a href="/listings">All Listings</a>
+            <a href="/listings/new">Add Property</a>
+            <a href="/bookings">My Bookings</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/favorites">Favorites</a>
+          </div>
+          <div class="footer-links">
+            <h3>Company</h3>
+            <a href="#">About Us</a>
+            <a href="#">Careers</a>
+            <a href="#">Blog</a>
+            <a href="#">Press</a>
+          </div>
+          <div class="footer-links">
+            <h3>Support</h3>
+            <a href="#">Help Center</a>
+            <a href="#">Safety</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 UrbanBUNK. All rights reserved. Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> for your next adventure.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile nav toggle
+      const mobileToggle = document.getElementById('mobileNavToggle');
+      const mainNav = document.getElementById('mainNav');
+      if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+          mainNav.classList.toggle('nav-open');
+          mobileToggle.classList.toggle('active');
+        });
+      }
+
+      // Sticky header shadow on scroll
+      const header = document.getElementById('main-header');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 10) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      });
+
+      // Auto-dismiss flash messages
+      document.querySelectorAll('.flash-toast').forEach(toast => {
+        setTimeout(() => {
+          toast.style.animation = 'slideOutRight 0.4s ease forwards';
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      });
+
+      // Scroll reveal animation
+      const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+      document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+    </script>
+  </body>
+</html>
