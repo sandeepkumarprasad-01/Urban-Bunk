@@ -1,0 +1,296 @@
+<%- include('../partials/header', { title: 'Payment - UrbanBUNK' }) %>
+
+    <section class="payment-section">
+      <div class="container">
+        <div class="payment-grid">
+
+          <!-- Payment Form Column -->
+          <div class="payment-form-col">
+            <div class="payment-header">
+              <a href="/listings/<%= booking.listing._id %>" class="payment-back-link">
+                <i class="fas fa-arrow-left"></i> Back to listing
+              </a>
+              <h1><i class="fas fa-lock"></i> Secure Payment</h1>
+              <p class="payment-subtitle">Complete your booking for <strong><%= booking.listing.title %></strong></p>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="payment-methods">
+              <h2>Choose Payment Method</h2>
+              <div class="method-tabs">
+                <button class="method-tab active" data-method="card" onclick="selectMethod('card')">
+                  <i class="fas fa-credit-card"></i>
+                  <span>Credit / Debit Card</span>
+                </button>
+                <button class="method-tab" data-method="upi" onclick="selectMethod('upi')">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span>UPI</span>
+                </button>
+                <button class="method-tab" data-method="netbanking" onclick="selectMethod('netbanking')">
+                  <i class="fas fa-university"></i>
+                  <span>Net Banking</span>
+                </button>
+              </div>
+            </div>
+
+            <form action="/bookings/<%= booking._id %>/process-payment" method="POST" id="paymentForm">
+              <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="card">
+
+              <!-- Card Payment Form -->
+              <div class="payment-form-body" id="cardForm">
+                <div class="form-group">
+                  <label for="cardNumber"><i class="fas fa-credit-card"></i> Card Number</label>
+                  <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
+                    oninput="formatCardNumber(this)" autocomplete="cc-number">
+                  <div class="card-icons">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-cc-amex"></i>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="cardName"><i class="fas fa-user"></i> Cardholder Name</label>
+                  <input type="text" id="cardName" name="cardName" placeholder="John Doe" autocomplete="cc-name">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="cardExpiry"><i class="fas fa-calendar-alt"></i> Expiry Date</label>
+                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5"
+                      oninput="formatExpiry(this)" autocomplete="cc-exp">
+                  </div>
+                  <div class="form-group">
+                    <label for="cardCvv"><i class="fas fa-shield-alt"></i> CVV</label>
+                    <input type="password" id="cardCvv" name="cardCvv" placeholder="•••" maxlength="4" autocomplete="cc-csc">
+                  </div>
+                </div>
+              </div>
+
+              <!-- UPI Payment Form -->
+              <div class="payment-form-body" id="upiForm" style="display:none;">
+                <div class="upi-info">
+                  <i class="fas fa-info-circle"></i>
+                  <p>Enter your UPI ID to make payment. You'll receive a payment request on your UPI app.</p>
+                </div>
+                <div class="form-group">
+                  <label for="upiId"><i class="fas fa-at"></i> UPI ID</label>
+                  <input type="text" id="upiId" name="upiId" placeholder="yourname@upi">
+                </div>
+                <div class="upi-apps">
+                  <span>Popular UPI Apps:</span>
+                  <div class="upi-app-icons">
+                    <div class="upi-app" onclick="document.getElementById('upiId').value='user@gpay'">
+                      <i class="fab fa-google-pay"></i>
+                      <span>Google Pay</span>
+                    </div>
+                    <div class="upi-app" onclick="document.getElementById('upiId').value='user@paytm'">
+                      <i class="fas fa-wallet"></i>
+                      <span>Paytm</span>
+                    </div>
+                    <div class="upi-app" onclick="document.getElementById('upiId').value='user@ybl'">
+                      <i class="fas fa-mobile-alt"></i>
+                      <span>PhonePe</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Net Banking Form -->
+              <div class="payment-form-body" id="netbankingForm" style="display:none;">
+                <div class="form-group">
+                  <label for="bankName"><i class="fas fa-university"></i> Select Your Bank</label>
+                  <select id="bankName" name="bankName">
+                    <option value="">-- Select a Bank --</option>
+                    <option value="sbi">State Bank of India</option>
+                    <option value="hdfc">HDFC Bank</option>
+                    <option value="icici">ICICI Bank</option>
+                    <option value="axis">Axis Bank</option>
+                    <option value="kotak">Kotak Mahindra Bank</option>
+                    <option value="pnb">Punjab National Bank</option>
+                    <option value="bob">Bank of Baroda</option>
+                    <option value="canara">Canara Bank</option>
+                  </select>
+                </div>
+                <div class="netbanking-info">
+                  <i class="fas fa-shield-alt"></i>
+                  <p>You'll be redirected to your bank's secure portal to complete the payment.</p>
+                </div>
+              </div>
+
+              <!-- Pay Button -->
+              <div class="payment-action">
+                <button type="submit" class="pay-now-btn" id="payNowBtn">
+                  <i class="fas fa-lock"></i>
+                  Pay ₹<%= booking.totalPrice.toLocaleString('en-IN') %>
+                </button>
+                <div class="payment-secure-badge">
+                  <i class="fas fa-shield-alt"></i> 256-bit SSL Encrypted | <i class="fas fa-lock"></i> Secure Payment
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Order Summary Column -->
+          <div class="payment-summary-col">
+            <div class="order-summary-card">
+              <h2>Booking Summary</h2>
+
+              <div class="summary-listing">
+                <% if (booking.listing.image && booking.listing.image.url) { %>
+                  <img src="<%= booking.listing.image.url %>" alt="<%= booking.listing.title %>">
+                <% } else { %>
+                  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=60" alt="<%= booking.listing.title %>">
+                <% } %>
+                <div class="summary-listing-info">
+                  <h3><%= booking.listing.title %></h3>
+                  <p><i class="fas fa-map-marker-alt"></i> <%= booking.listing.location %>, <%= booking.listing.country %></p>
+                  <% if (booking.listing.category) { %>
+                    <span class="summary-category"><%= booking.listing.category %></span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="summary-details">
+                <div class="summary-detail-row">
+                  <div class="summary-detail">
+                    <i class="fas fa-calendar-check"></i>
+                    <div>
+                      <span class="detail-label">Check-in</span>
+                      <span class="detail-value"><%= booking.checkIn.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                    </div>
+                  </div>
+                  <div class="summary-detail">
+                    <i class="fas fa-calendar-times"></i>
+                    <div>
+                      <span class="detail-label">Check-out</span>
+                      <span class="detail-value"><%= booking.checkOut.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="summary-detail-row">
+                  <div class="summary-detail">
+                    <i class="fas fa-users"></i>
+                    <div>
+                      <span class="detail-label">Guests</span>
+                      <span class="detail-value"><%= booking.guests %> guest<%= booking.guests > 1 ? 's' : '' %></span>
+                    </div>
+                  </div>
+                  <div class="summary-detail">
+                    <i class="fas fa-moon"></i>
+                    <div>
+                      <span class="detail-label">Duration</span>
+                      <span class="detail-value"><%= nights %> night<%= nights > 1 ? 's' : '' %></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="price-breakdown">
+                <div class="price-row">
+                  <span>₹<%= booking.listing.price.toLocaleString('en-IN') %> × <%= nights %> night<%= nights > 1 ? 's' : '' %></span>
+                  <span>₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+                </div>
+                <div class="price-row">
+                  <span>Service fee</span>
+                  <span>₹0</span>
+                </div>
+                <div class="price-row price-total">
+                  <strong>Total</strong>
+                  <strong>₹<%= booking.totalPrice.toLocaleString('en-IN') %></strong>
+                </div>
+              </div>
+
+              <div class="cancellation-policy">
+                <i class="fas fa-info-circle"></i>
+                <p><strong>Free cancellation</strong> before check-in. After that, the first night is non-refundable.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Payment Processing Modal -->
+    <div class="payment-processing-modal" id="processingModal" style="display:none;">
+      <div class="processing-content">
+        <div class="processing-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <h2>Processing Payment...</h2>
+        <p>Please do not close this window or press the back button.</p>
+      </div>
+    </div>
+
+    <script>
+      // Payment method switching
+      function selectMethod(method) {
+        // Update hidden input
+        document.getElementById('paymentMethodInput').value = method;
+
+        // Update tab styling
+        document.querySelectorAll('.method-tab').forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.method === method);
+        });
+
+        // Show/hide forms
+        document.getElementById('cardForm').style.display = method === 'card' ? 'block' : 'none';
+        document.getElementById('upiForm').style.display = method === 'upi' ? 'block' : 'none';
+        document.getElementById('netbankingForm').style.display = method === 'netbanking' ? 'block' : 'none';
+      }
+
+      // Format card number with spaces
+      function formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        let formatted = '';
+        for (let i = 0; i < value.length && i < 16; i++) {
+          if (i > 0 && i % 4 === 0) formatted += ' ';
+          formatted += value[i];
+        }
+        input.value = formatted;
+      }
+
+      // Format expiry date
+      function formatExpiry(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+          value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        input.value = value;
+      }
+
+      // Show processing modal on form submit
+      document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const method = document.getElementById('paymentMethodInput').value;
+        let valid = true;
+
+        if (method === 'card') {
+          const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+          const cardName = document.getElementById('cardName').value;
+          const cardExpiry = document.getElementById('cardExpiry').value;
+          const cardCvv = document.getElementById('cardCvv').value;
+          
+          if (!cardNum || cardNum.length !== 16) { valid = false; alert('Please enter a valid 16-digit card number'); }
+          else if (!cardName) { valid = false; alert('Please enter the cardholder name'); }
+          else if (!cardExpiry || cardExpiry.length < 5) { valid = false; alert('Please enter a valid expiry date (MM/YY)'); }
+          else if (!cardCvv || cardCvv.length < 3) { valid = false; alert('Please enter a valid CVV'); }
+        } else if (method === 'upi') {
+          const upiId = document.getElementById('upiId').value;
+          if (!upiId || !upiId.includes('@')) { valid = false; alert('Please enter a valid UPI ID'); }
+        } else if (method === 'netbanking') {
+          const bankName = document.getElementById('bankName').value;
+          if (!bankName) { valid = false; alert('Please select a bank'); }
+        }
+
+        if (!valid) {
+          e.preventDefault();
+          return;
+        }
+
+        // Show processing modal
+        document.getElementById('processingModal').style.display = 'flex';
+        document.getElementById('payNowBtn').disabled = true;
+        document.getElementById('payNowBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      });
+    </script>
+
+<%- include('../partials/footer') %>

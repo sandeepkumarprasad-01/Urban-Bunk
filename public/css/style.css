@@ -584,3 +584,126 @@ nav a.active{color:var(--accent);background:var(--accent-light);}
   .tab-btn{padding:8px 16px;font-size:12px;}
   .amenities-checkboxes{grid-template-columns:1fr;}
 }
+
+/* ============================================
+   PAYMENT GATEWAY 
+   ============================================ */
+
+/* ---------- PAYMENT PAGE LAYOUT ---------- */
+.payment-section{padding:40px 0 80px;min-height:70vh;}
+.payment-grid{display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start;}
+
+/* Payment Form Column */
+.payment-form-col{background:var(--bg-card);border-radius:var(--radius-lg);padding:36px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.payment-header{margin-bottom:32px;}
+.payment-back-link{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-weight:600;font-size:14px;margin-bottom:20px;transition:all 0.3s;}
+.payment-back-link:hover{gap:12px;color:var(--accent-hover);}
+.payment-header h1{font-size:clamp(24px,3vw,32px);font-weight:800;color:var(--text-primary);display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.payment-header h1 i{color:var(--accent);font-size:24px;}
+.payment-subtitle{color:var(--text-secondary);font-size:15px;}
+
+/* Payment Method Tabs */
+.payment-methods{margin-bottom:28px;}
+.payment-methods h2{font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:16px;}
+.method-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.method-tab{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 14px;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--bg-body);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all var(--transition);font-family:var(--font);}
+.method-tab i{font-size:24px;transition:color 0.3s;}
+.method-tab:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.method-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-light);box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+.method-tab.active i{color:var(--accent);}
+
+/* Payment Form Body */
+.payment-form-body{margin-bottom:24px;animation:fadeInUp 0.3s ease;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.payment-form-body .form-group{margin-bottom:18px;position:relative;}
+.payment-form-body label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+.payment-form-body label i{color:var(--accent);font-size:14px;}
+.payment-form-body input,.payment-form-body select{width:100%;padding:14px 18px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-weight:600;color:var(--text-primary);background:var(--bg-body);transition:all var(--transition);font-family:var(--font);}
+.payment-form-body input:focus,.payment-form-body select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-light);background:var(--bg-card);}
+.payment-form-body input::placeholder{color:var(--text-muted);font-weight:400;}
+.payment-form-body .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* Card Icons */
+.card-icons{position:absolute;right:16px;top:38px;display:flex;gap:8px;color:var(--text-muted);font-size:24px;pointer-events:none;}
+.card-icons i{opacity:0.5;transition:opacity 0.3s;}
+
+/* UPI Section */
+.upi-info{display:flex;align-items:flex-start;gap:12px;padding:16px;background:rgba(99,102,241,0.06);border-radius:var(--radius-sm);margin-bottom:20px;border:1px solid rgba(99,102,241,0.1);}
+.upi-info i{color:var(--accent);font-size:18px;margin-top:2px;flex-shrink:0;}
+.upi-info p{color:var(--text-secondary);font-size:14px;line-height:1.5;}
+.upi-apps{margin-top:20px;}
+.upi-apps>span{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:12px;}
+.upi-app-icons{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.upi-app{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);font-size:12px;font-weight:600;color:var(--text-secondary);}
+.upi-app i{font-size:28px;color:var(--accent);}
+.upi-app:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+
+/* Net Banking */
+.netbanking-info{display:flex;align-items:flex-start;gap:12px;padding:16px;background:rgba(16,185,129,0.06);border-radius:var(--radius-sm);margin-top:16px;border:1px solid rgba(16,185,129,0.1);}
+.netbanking-info i{color:#10b981;font-size:18px;margin-top:2px;flex-shrink:0;}
+.netbanking-info p{color:var(--text-secondary);font-size:14px;line-height:1.5;}
+
+/* Pay Button */
+.payment-action{margin-top:8px;}
+.pay-now-btn{width:100%;padding:18px 28px;border:none;border-radius:var(--radius-pill);background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:18px;font-weight:800;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 20px rgba(16,185,129,0.35);font-family:var(--font);letter-spacing:0.3px;}
+.pay-now-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(16,185,129,0.45);}
+.pay-now-btn:active{transform:translateY(0);}
+.pay-now-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none !important;}
+.payment-secure-badge{text-align:center;margin-top:14px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;gap:6px;}
+.payment-secure-badge i{font-size:11px;color:var(--accent);}
+
+/* Order Summary Column */
+.payment-summary-col{position:sticky;top:calc(var(--header-h) + 20px);}
+.order-summary-card{background:var(--bg-card);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.order-summary-card h2{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:20px;letter-spacing:-0.3px;}
+
+/* Summary Listing */
+.summary-listing{display:flex;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.summary-listing img{width:100px;height:80px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;}
+.summary-listing-info h3{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.summary-listing-info p{font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-bottom:6px;}
+.summary-listing-info p i{font-size:11px;color:var(--coral);}
+.summary-category{display:inline-block;background:var(--accent-light);color:var(--accent);padding:3px 10px;border-radius:var(--radius-pill);font-size:11px;font-weight:700;}
+
+/* Summary Details */
+.summary-details{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.summary-detail-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.summary-detail-row:last-child{margin-bottom:0;}
+.summary-detail{display:flex;align-items:center;gap:10px;font-size:13px;}
+.summary-detail i{color:var(--accent);font-size:14px;width:16px;text-align:center;flex-shrink:0;}
+.detail-label{display:block;font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.detail-value{display:block;font-size:13px;font-weight:700;color:var(--text-primary);}
+
+/* Price Breakdown */
+.price-breakdown{margin-bottom:20px;}
+.price-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:var(--text-secondary);}
+.price-total{border-top:2px solid var(--border);padding-top:14px;margin-top:8px;font-size:16px;}
+.price-total strong{color:var(--text-primary);}
+
+/* Cancellation Policy */
+.cancellation-policy{display:flex;align-items:flex-start;gap:10px;padding:14px;background:rgba(245,158,11,0.06);border-radius:var(--radius-sm);border:1px solid rgba(245,158,11,0.12);font-size:13px;color:var(--text-secondary);line-height:1.5;}
+.cancellation-policy i{color:#f59e0b;font-size:16px;margin-top:2px;flex-shrink:0;}
+.cancellation-policy strong{color:var(--text-primary);}
+
+/* Processing Modal */
+.payment-processing-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;}
+.processing-content{text-align:center;background:var(--bg-card);padding:48px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);max-width:400px;width:90%;}
+.processing-content h2{font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:10px;}
+.processing-content p{color:var(--text-muted);font-size:14px;}
+.processing-spinner{margin:0 auto 28px;width:64px;height:64px;position:relative;}
+.spinner-ring{width:64px;height:64px;border:5px solid var(--border);border-top:5px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- PAYMENT RESPONSIVE ---------- */
+@media(max-width:900px){
+  .payment-grid{grid-template-columns:1fr;}
+  .payment-summary-col{position:static;order:-1;}
+}
+@media(max-width:480px){
+  .payment-form-col{padding:24px;}
+  .method-tabs{grid-template-columns:1fr;}
+  .payment-form-body .form-row{grid-template-columns:1fr;}
+  .upi-app-icons{grid-template-columns:1fr;}
+  .summary-detail-row{grid-template-columns:1fr;}
+}

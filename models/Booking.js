@@ -35,6 +35,25 @@ const bookingSchema = new Schema({
     enum: ['pending', 'confirmed', 'cancelled', 'rejected'],
     default: 'pending'
   },
+  // Payment fields
+  paymentId: {
+    type: String,
+    default: null
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['card', 'upi', 'netbanking', null],
+    default: null
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'paid', 'refunded'],
+    default: 'unpaid'
+  },
+  paidAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

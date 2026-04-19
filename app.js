@@ -27,7 +27,10 @@ const searchRoutes = require("./routes/search.routes");
 
 const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust";
 
-mongoose.connect(MONGO_URL)
+mongoose.connect(MONGO_URL, {
+  family: 4, // Force IPv4 (Atlas IP whitelist is IPv4 only)
+  serverSelectionTimeoutMS: 15000,
+})
   .then(() => {
     console.log("Connected to MongoDB successfully!");
     const PORT = process.env.PORT || 8080;
@@ -41,6 +44,10 @@ mongoose.connect(MONGO_URL)
     console.error("============================================================");
     console.error("Failed to connect to MongoDB.");
     console.error("Make sure you have a .env file with MONGO_URL set.");
+    if (err.message.includes("whitelist") || err.message.includes("ECONNREFUSED")) {
+      console.error("\n⚠️  Your IP might not be whitelisted in MongoDB Atlas!");
+      console.error("Go to: https://cloud.mongodb.com → Network Access → Add Current IP");
+    }
     console.error("============================================================\n");
     console.error("Technical details:", err.message);
     process.exit(1);
