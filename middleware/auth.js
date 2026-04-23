@@ -3,6 +3,12 @@ const isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
+  
+  // Handle API/fetch requests
+  if (req.xhr || req.headers.accept?.includes('application/json') || req.path.startsWith('/api/') || req.path.includes('/favorites/')) {
+    return res.status(401).json({ message: 'You must be logged in to do that' });
+  }
+  
   req.session.returnTo = req.originalUrl;
   res.redirect('/login');
 };

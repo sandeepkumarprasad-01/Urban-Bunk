@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Favorite = require('../models/favorite.js');
+const { isAuthenticated } = require('../middleware/auth');
 
 // Favorites Routes
-router.get("/favorites", async (req, res) => {
+router.get("/favorites", isAuthenticated, async (req, res) => {
   try {
-    const favorites = await Favorite.find({})
+    const favorites = await Favorite.find({ userId: req.user._id })
       .populate('listingId')
       .sort({ addedAt: -1 });
     
@@ -23,17 +24,18 @@ router.get("/favorites", async (req, res) => {
 });
 
 // Add to favorites
-router.post("/favorites/:listingId", async (req, res) => {
+router.post("/favorites/:listingId", isAuthenticated, async (req, res) => {
   try {
     const { listingId } = req.params;
+    const userId = req.user._id;
     
     // Check if already favorited
-    const existingFavorite = await Favorite.findOne({ listingId });
+    const existingFavorite = await Favorite.findOne({ listingId, userId });
     if (existingFavorite) {
       return res.status(400).json({ message: 'Already in favorites' });
     }
     
-    const favorite = new Favorite({ listingId });
+    const favorite = new Favorite({ listingId, userId });
     await favorite.save();
     
     res.status(201).json({ message: 'Added to favorites', favorite });
@@ -44,10 +46,11 @@ router.post("/favorites/:listingId", async (req, res) => {
 });
 
 // Check if listing is favorited
-router.get("/favorites/check/:listingId", async (req, res) => {
+router.get("/favorites/check/:listingId", isAuthenticated, async (req, res) => {
   try {
     const { listingId } = req.params;
-    const favorite = await Favorite.findOne({ listingId });
+    const userId = req.user._id;
+    const favorite = await Favorite.findOne({ listingId, userId });
     res.json({ isFavorited: !!favorite });
   } catch (error) {
     console.error('Error checking favorite status:', error);
@@ -56,10 +59,11 @@ router.get("/favorites/check/:listingId", async (req, res) => {
 });
 
 // Remove from favorites by listing ID
-router.delete("/favorites/by-listing/:listingId", async (req, res) => {
+router.delete("/favorites/by-listing/:listingId", isAuthenticated, async (req, res) => {
   try {
     const { listingId } = req.params;
-    await Favorite.deleteOne({ listingId });
+    const userId = req.user._id;
+    await Favorite.deleteOne({ listingId, userId });
     res.status(200).json({ message: 'Removed from favorites' });
   } catch (error) {
     console.error('Error removing favorite:', error);
@@ -68,10 +72,11 @@ router.delete("/favorites/by-listing/:listingId", async (req, res) => {
 });
 
 // Remove from favorites
-router.delete("/favorites/:favoriteId", async (req, res) => {
+router.delete("/favorites/:favoriteId", isAuthenticated, async (req, res) => {
   try {
     const { favoriteId } = req.params;
-    await Favorite.findByIdAndDelete(favoriteId);
+    const userId = req.user._id;
+    await Favorite.findOneAndDelete({ _id: favoriteId, userId });
     res.status(200).json({ message: 'Removed from favorites' });
   } catch (error) {
     console.error('Error removing favorite:', error);
@@ -80,3 +85,4 @@ router.delete("/favorites/:favoriteId", async (req, res) => {
 });
 
 module.exports = router;
+

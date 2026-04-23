@@ -53,7 +53,7 @@
                     <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
                   <% } %>
                   <div class="favorite-price">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
-                  <i class="fas fa-heart favorite-icon" data-listing-id="<%= listing._id %>"></i>
+                  <i class="far fa-heart favorite-icon" data-listing-id="<%= listing._id %>"></i>
                   <% if (listing.category) { %>
                     <span class="card-category-tag"><%= listing.category %></span>
                   <% } %>
@@ -122,10 +122,20 @@
           try {
             if (isFav) {
               const res = await fetch(`/favorites/by-listing/${id}`, { method: 'DELETE' });
-              if (res.ok) this.classList.remove('favorited');
+              if (res.ok) {
+                this.classList.remove('favorited');
+                this.classList.remove('fas');
+                this.classList.add('far');
+              }
             } else {
               const res = await fetch(`/favorites/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-              if (res.status === 201) this.classList.add('favorited');
+              if (res.status === 201) {
+                this.classList.add('favorited');
+                this.classList.remove('far');
+                this.classList.add('fas');
+              } else if (res.status === 401) {
+                window.location.href = '/login';
+              }
             }
           } catch(e) { console.error(e); }
         });
@@ -136,7 +146,15 @@
         const id = icon.dataset.listingId;
         try {
           const res = await fetch(`/favorites/check/${id}`);
-          if (res.ok) { const d = await res.json(); if (d.isFavorited) icon.classList.add('favorited'); }
+          if (res.status === 401) return; // User not logged in, no favorites to check
+          if (res.ok) { 
+            const d = await res.json(); 
+            if (d.isFavorited) {
+              icon.classList.add('favorited');
+              icon.classList.remove('far');
+              icon.classList.add('fas');
+            } 
+          }
         } catch(e) {}
       });
     </script>

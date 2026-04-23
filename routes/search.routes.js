@@ -7,8 +7,8 @@ router.get("/search", async (req, res) => {
   try {
     const { location, checkin, checkout, guests } = req.query;
     
-    // Build search query
-    let searchQuery = { available: true };
+    // Build search query - include available listings or those that don't have available set to false
+    let searchQuery = { available: { $ne: false } };
     
     // Add location filter (case-insensitive partial match)
     if (location) {
