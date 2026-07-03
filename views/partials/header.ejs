@@ -46,7 +46,9 @@
           <a href="/favorites" class="nav-link"><i class="fas fa-heart"></i> Favorites</a>
           <a href="/bookings" class="nav-link"><i class="fas fa-suitcase"></i> My Bookings</a>
           <a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-          <a href="/listings/new" class="nav-link">Add Listing</a>
+          <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+            <a href="/listings/new" class="nav-link">Add Listing</a>
+          <% } %>
           <div class="nav-user">
             <span class="user-avatar"><%= currentUser.username.charAt(0).toUpperCase() %></span>
             <span class="user-name"><%= currentUser.username %></span>

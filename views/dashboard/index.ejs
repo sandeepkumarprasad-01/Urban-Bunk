@@ -7,7 +7,9 @@
             <h1>Welcome back, <span class="accent-text"><%= currentUser.username %></span></h1>
             <p class="dashboard-subtitle">Here's an overview of your hosting activity</p>
           </div>
-          <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add New Listing</a>
+          <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+            <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add New Listing</a>
+          <% } %>
         </div>
 
         <!-- Stats Cards -->

@@ -16,7 +16,9 @@
             <h3>Explore</h3>
             <a href="/">Home</a>
             <a href="/listings">All Listings</a>
-            <a href="/listings/new">Add Property</a>
+            <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+              <a href="/listings/new">Add Property</a>
+            <% } %>
             <a href="/bookings">My Bookings</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/favorites">Favorites</a>

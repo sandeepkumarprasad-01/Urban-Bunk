@@ -45,7 +45,27 @@ const isOwner = async (req, res, next) => {
   }
 };
 
+// The only email allowed to add listings
+const ADMIN_EMAIL = 'user@test.com';
+
+// Middleware to check if the logged-in user is the admin (user@test.com)
+const isAdmin = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    req.session.returnTo = req.originalUrl;
+    return res.redirect('/login');
+  }
+
+  if (req.user.email !== ADMIN_EMAIL) {
+    req.flash('error', 'You do not have permission to perform this action');
+    return res.redirect('/listings');
+  }
+
+  next();
+};
+
 module.exports = {
   isAuthenticated,
-  isOwner
+  isOwner,
+  isAdmin,
+  ADMIN_EMAIL
 };

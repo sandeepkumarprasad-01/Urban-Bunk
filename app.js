@@ -26,6 +26,7 @@ const favoritesRoutes = require("./routes/favorites.routes");
 const searchRoutes = require("./routes/search.routes");
 
 const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/wanderlust";
+const { ADMIN_EMAIL } = require('./middleware/auth');
 
 mongoose.connect(MONGO_URL, {
   family: 4, // Force IPv4 (Atlas IP whitelist is IPv4 only)
@@ -84,6 +85,7 @@ app.use(passport.session());
 // Make user and flash messages available to all templates MUST BE AFTER PASSPORT
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
+  res.locals.isAdminUser = req.user && req.user.email === ADMIN_EMAIL;
   res.locals.error = req.flash('error');
   res.locals.success = req.flash('success');
   res.locals.categories = ['Beach', 'Mountain', 'City', 'Countryside', 'Lake', 'Desert', 'Island', 'Cabin'];

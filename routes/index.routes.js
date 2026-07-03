@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Listing = require('../models/listing.js');
 const Review = require('../models/Review.js');
-const { isAuthenticated, isOwner } = require('../middleware/auth');
+const { isAuthenticated, isOwner, isAdmin } = require('../middleware/auth');
 
 // Index Route
 router.get("/listings", async (req, res) => {
@@ -33,7 +33,7 @@ router.get("/listings", async (req, res) => {
 });
 
 // New Route - Protected
-router.get("/listings/new", isAuthenticated, (req, res) => {
+router.get("/listings/new", isAdmin, (req, res) => {
   res.render("listings/new.ejs", {
     categories: Listing.CATEGORIES,
     propertyTypes: Listing.PROPERTY_TYPES
@@ -69,7 +69,7 @@ router.get("/listings/:id", async (req, res) => {
 });
 
 // Create Route - Protected
-router.post("/listings", isAuthenticated, async (req, res) => {
+router.post("/listings", isAdmin, async (req, res) => {
   try {
     const listingData = req.body.listing;
     

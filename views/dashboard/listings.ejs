@@ -9,7 +9,9 @@
           </div>
           <div class="dashboard-header-actions">
             <a href="/dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Dashboard</a>
-            <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add Listing</a>
+            <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+              <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Add Listing</a>
+            <% } %>
           </div>
         </div>
 
@@ -19,7 +21,9 @@
             <h2>No listings yet</h2>
             <p>Start hosting by adding your first property!</p>
             <div class="no-favorites-actions">
-              <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Create Listing</a>
+              <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+                <a href="/listings/new" class="btn"><i class="fas fa-plus"></i> Create Listing</a>
+              <% } %>
             </div>
           </div>
         <% } else { %>

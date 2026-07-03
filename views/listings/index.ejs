@@ -37,7 +37,9 @@
               <% if (activeCategory) { %>
                 <a href="/listings" class="btn"><i class="fas fa-th"></i> View All</a>
               <% } %>
-              <a href="/listings/new" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Listing</a>
+              <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+                <a href="/listings/new" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Listing</a>
+              <% } %>
             </div>
           </div>
         <% } else { %>

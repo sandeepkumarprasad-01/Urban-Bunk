@@ -18,7 +18,9 @@
       <nav>
         <a href="/">Home</a>
         <a href="/listings">All Listings</a>
-        <a href="/listings/new">Add Listing</a>
+        <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
+          <a href="/listings/new">Add Listing</a>
+        <% } %>
         <a href="/favorites">My Favorites</a>
       </nav>
     </header>
