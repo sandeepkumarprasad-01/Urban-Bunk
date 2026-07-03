@@ -2,8 +2,8 @@
 
     <section class="hero">
       <div class="hero-content">
-        <h1>Find your next urban adventure</h1>
-        <p>Search deals on hotels, homes, and much more...</p>
+        <h1 data-i18n="hero.title">Find your next urban adventure</h1>
+        <p data-i18n="hero.subtitle">Search deals on hotels, homes, and much more...</p>
         <div class="search-bar">
           <form class="search-form" action="/search" method="GET">
             <div class="search-input">
@@ -69,8 +69,8 @@
     <section class="featured">
       <div class="container">
         <div class="section-header">
-          <h2>Popular Destinations</h2>
-          <p>Hand-picked properties loved by travelers around the world</p>
+          <h2 data-i18n="section.popular">Popular Destinations</h2>
+          <p data-i18n="section.popularDesc">Hand-picked properties loved by travelers around the world</p>
         </div>
         <% if (allListings.length === 0) { %>
           <div style="text-align:center;padding:40px 0;">
@@ -89,7 +89,7 @@
                   <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= allListings[i].title %>">
                 <% } %>
                 <div class="card-overlay"></div>
-                <div class="card-price-tag">₹<%= allListings[i].price ? allListings[i].price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                <div class="card-price-tag" data-price="<%= allListings[i].price || 0 %>" data-price-suffix="/night">₹<%= allListings[i].price ? allListings[i].price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
                 <% if (allListings[i].category) { %>
                   <span class="card-category-tag"><%= allListings[i].category %></span>
                 <% } %>
@@ -103,7 +103,7 @@
                     <span class="detail-item"><i class="fas fa-users"></i> <%= allListings[i].maxGuests || 2 %></span>
                     <span class="detail-item"><i class="fas fa-check-circle"></i> <%= allListings[i].available !== false ? 'Available' : 'Booked' %></span>
                   </div>
-                  <span class="view-details-link">View Details <i class="fas fa-arrow-right"></i></span>
+                  <span class="view-details-link" data-i18n="section.viewDetails">View Details <i class="fas fa-arrow-right"></i></span>
                 </div>
               </div>
             </a>
@@ -111,7 +111,7 @@
         </div>
         <% } %>
         <div class="view-all">
-          <a href="/listings" class="btn"><i class="fas fa-compass"></i> View All Listings</a>
+          <a href="/listings" class="btn" data-i18n="section.viewAll"><i class="fas fa-compass"></i> View All Listings</a>
         </div>
       </div>
     </section>
@@ -120,29 +120,29 @@
     <section class="trust-section">
       <div class="container">
         <div class="section-header">
-          <h2>Why UrbanBUNK?</h2>
-          <p>Trusted by thousands of travelers worldwide</p>
+          <h2 data-i18n="section.whyUs">Why UrbanBUNK?</h2>
+          <p data-i18n="section.whyUsDesc">Trusted by thousands of travelers worldwide</p>
         </div>
         <div class="trust-grid">
           <div class="trust-card">
             <div class="trust-icon"><i class="fas fa-shield-alt"></i></div>
-            <h3>Verified Properties</h3>
-            <p>Every listing is verified by our team to ensure quality and safety standards</p>
+            <h3 data-i18n="trust.verified">Verified Properties</h3>
+            <p data-i18n="trust.verifiedDesc">Every listing is verified by our team to ensure quality and safety standards</p>
           </div>
           <div class="trust-card">
             <div class="trust-icon"><i class="fas fa-headset"></i></div>
-            <h3>24/7 Support</h3>
-            <p>Our dedicated support team is available around the clock for any assistance</p>
+            <h3 data-i18n="trust.support">24/7 Support</h3>
+            <p data-i18n="trust.supportDesc">Our dedicated support team is available around the clock for any assistance</p>
           </div>
           <div class="trust-card">
             <div class="trust-icon"><i class="fas fa-lock"></i></div>
-            <h3>Secure Booking</h3>
-            <p>Your payments and personal information are protected with top-tier security</p>
+            <h3 data-i18n="trust.secure">Secure Booking</h3>
+            <p data-i18n="trust.secureDesc">Your payments and personal information are protected with top-tier security</p>
           </div>
           <div class="trust-card">
             <div class="trust-icon"><i class="fas fa-undo"></i></div>
-            <h3>Free Cancellation</h3>
-            <p>Plans change — enjoy flexible cancellation on most properties</p>
+            <h3 data-i18n="trust.cancel">Free Cancellation</h3>
+            <p data-i18n="trust.cancelDesc">Plans change — enjoy flexible cancellation on most properties</p>
           </div>
         </div>
       </div>

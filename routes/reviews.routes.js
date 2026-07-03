@@ -16,11 +16,23 @@ router.post('/listings/:id/reviews', isAuthenticated, async (req, res) => {
       return res.redirect(`/listings/${listingId}`);
     }
 
+    // Process photo URLs (up to 3)
+    const photos = [];
+    if (req.body.photos) {
+      const photoUrls = Array.isArray(req.body.photos) ? req.body.photos : [req.body.photos];
+      photoUrls.forEach(url => {
+        if (url && url.trim()) {
+          photos.push({ url: url.trim() });
+        }
+      });
+    }
+
     const review = new Review({
       user: req.user._id,
       listing: listingId,
       rating: parseInt(rating),
-      comment
+      comment,
+      photos: photos.slice(0, 3)
     });
 
     await review.save();

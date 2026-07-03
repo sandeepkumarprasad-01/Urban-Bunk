@@ -23,6 +23,12 @@ const reviewSchema = new Schema({
     required: true,
     maxlength: 1000
   },
+  photos: [{
+    url: {
+      type: String,
+      trim: true
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

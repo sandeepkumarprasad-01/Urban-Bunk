@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const passport = require('passport');
+const { isAuthenticated } = require('../middleware/auth');
+
+// Settings page
+router.get('/settings', isAuthenticated, (req, res) => {
+  res.render('auth/settings', {
+    title: 'Settings - UrbanBUNK'
+  });
+});
 
 // Register form
 router.get('/register', (req, res) => {

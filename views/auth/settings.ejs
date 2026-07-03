@@ -1,0 +1,79 @@
+<%- include('../partials/header', { title: 'Settings - UrbanBUNK' }) %>
+
+    <section class="settings-section">
+      <div class="container">
+        <div class="heading-box">
+          <h1 data-i18n="settings.title">Profile Settings</h1>
+        </div>
+
+        <div class="settings-card">
+          <h2><i class="fas fa-sliders-h"></i> <span data-i18n="settings.desc">Customize your UrbanBUNK experience. Changes are saved automatically.</span></h2>
+
+          <!-- Language -->
+          <div class="settings-group">
+            <label for="settingsLang"><i class="fas fa-language"></i> <span data-i18n="settings.language">Language</span></label>
+            <select id="settingsLang" onchange="applyLanguage(this.value)">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="es">Español (Spanish)</option>
+              <option value="fr">Français (French)</option>
+              <option value="de">Deutsch (German)</option>
+              <option value="ja">日本語 (Japanese)</option>
+            </select>
+            <p class="settings-hint"><i class="fas fa-info-circle"></i> <span data-i18n="settings.langHint">This changes the display language of the website</span></p>
+          </div>
+
+          <!-- Currency -->
+          <div class="settings-group">
+            <label for="settingsCurrency"><i class="fas fa-coins"></i> <span data-i18n="settings.currency">Currency</span></label>
+            <select id="settingsCurrency" onchange="applyCurrency(this.value)">
+              <option value="INR">₹ INR — Indian Rupee</option>
+              <option value="USD">$ USD — US Dollar</option>
+              <option value="EUR">€ EUR — Euro</option>
+              <option value="GBP">£ GBP — British Pound</option>
+              <option value="JPY">¥ JPY — Japanese Yen</option>
+            </select>
+            <p class="settings-hint"><i class="fas fa-info-circle"></i> <span data-i18n="settings.currHint">Prices will be displayed in your selected currency</span></p>
+          </div>
+
+          <!-- Theme -->
+          <div class="settings-group">
+            <label for="settingsTheme"><i class="fas fa-palette"></i> <span data-i18n="settings.theme">Theme</span></label>
+            <select id="settingsTheme" onchange="changeTheme(this.value)">
+              <option value="light">☀️ Light</option>
+              <option value="dark">🌙 Dark</option>
+            </select>
+            <p class="settings-hint"><i class="fas fa-info-circle"></i> <span data-i18n="settings.themeHint">Choose between light and dark mode</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // Restore saved preferences in settings page selects
+      (function() {
+        const lang = localStorage.getItem('ub_language') || 'en';
+        const currency = localStorage.getItem('ub_currency') || 'INR';
+        const theme = localStorage.getItem('ub_theme') || 'light';
+
+        const langSel = document.getElementById('settingsLang');
+        const currSel = document.getElementById('settingsCurrency');
+        const themeSel = document.getElementById('settingsTheme');
+
+        if (langSel) langSel.value = lang;
+        if (currSel) currSel.value = currency;
+        if (themeSel) themeSel.value = theme;
+      })();
+
+      function changeTheme(val) {
+        const html = document.documentElement;
+        if (val === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+        }
+        localStorage.setItem('ub_theme', val);
+      }
+    </script>
+
+<%- include('../partials/footer') %>

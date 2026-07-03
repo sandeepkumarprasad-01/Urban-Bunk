@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      // Apply theme immediately to prevent flash
+      (function(){
+        const t = localStorage.getItem('ub_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+      })();
+    </script>
   </head>
   <body>
     <!-- Flash Messages -->
@@ -30,6 +37,12 @@
       <% }); %>
     <% } %>
 
+    <!-- Photo Lightbox Modal -->
+    <div class="photo-lightbox" id="photoLightbox" onclick="closeLightbox()">
+      <button class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+      <img id="lightboxImg" src="" alt="Review photo" onclick="event.stopPropagation()" />
+    </div>
+
     <header id="main-header">
       <div class="logo">
         <a href="/">
@@ -40,23 +53,50 @@
         <span></span><span></span><span></span>
       </button>
       <nav id="mainNav">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/listings" class="nav-link">Explore</a>
+        <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="/listings" class="nav-link" data-i18n="nav.explore">Explore</a>
         <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-          <a href="/favorites" class="nav-link"><i class="fas fa-heart"></i> Favorites</a>
-          <a href="/bookings" class="nav-link"><i class="fas fa-suitcase"></i> My Bookings</a>
-          <a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+          <a href="/favorites" class="nav-link" data-i18n="nav.favorites"><i class="fas fa-heart"></i> Favorites</a>
+          <a href="/bookings" class="nav-link" data-i18n="nav.bookings"><i class="fas fa-suitcase"></i> My Bookings</a>
+          <a href="/dashboard" class="nav-link" data-i18n="nav.dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
           <% if (typeof isAdminUser !== 'undefined' && isAdminUser) { %>
-            <a href="/listings/new" class="nav-link">Add Listing</a>
+            <a href="/listings/new" class="nav-link" data-i18n="nav.addListing">Add Listing</a>
           <% } %>
+          <a href="/settings" class="nav-link" data-i18n="nav.settings"><i class="fas fa-cog"></i> Settings</a>
           <div class="nav-user">
             <span class="user-avatar"><%= currentUser.username.charAt(0).toUpperCase() %></span>
             <span class="user-name"><%= currentUser.username %></span>
-            <a href="/logout" class="nav-link logout-btn">Logout</a>
+            <a href="/logout" class="nav-link logout-btn" data-i18n="nav.logout">Logout</a>
           </div>
         <% } else { %>
-          <a href="/login" class="nav-link btn-nav-outline">Sign In</a>
-          <a href="/register" class="nav-link btn-nav-filled">Get Started</a>
+          <a href="/login" class="nav-link btn-nav-outline" data-i18n="nav.signIn">Sign In</a>
+          <a href="/register" class="nav-link btn-nav-filled" data-i18n="nav.getStarted">Get Started</a>
         <% } %>
+        <!-- Theme Toggle + Currency + Language -->
+        <div class="nav-dropdown-group">
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+            <i class="fas fa-moon icon-moon"></i>
+            <i class="fas fa-sun icon-sun"></i>
+          </button>
+          <div class="nav-select-wrap">
+            <select class="nav-select" id="currencySelect" aria-label="Currency" title="Select currency" onchange="applyCurrency(this.value)">
+              <option value="INR">₹ INR</option>
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="GBP">£ GBP</option>
+              <option value="JPY">¥ JPY</option>
+            </select>
+          </div>
+          <div class="nav-select-wrap">
+            <select class="nav-select" id="langSelect" aria-label="Language" title="Select language" onchange="applyLanguage(this.value)">
+              <option value="en">EN</option>
+              <option value="hi">हिन्दी</option>
+              <option value="es">ES</option>
+              <option value="fr">FR</option>
+              <option value="de">DE</option>
+              <option value="ja">日本語</option>
+            </select>
+          </div>
+        </div>
       </nav>
     </header>

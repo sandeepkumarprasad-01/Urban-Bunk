@@ -113,13 +113,13 @@
 
             <!-- Reviews Section -->
             <div class="show-section">
-              <h2><i class="fas fa-comments"></i> Reviews <% if (reviews.length > 0) { %><span class="review-count">(<%= reviews.length %>)</span><% } %></h2>
+              <h2><i class="fas fa-comments"></i> <span data-i18n="review.title">Reviews</span> <% if (reviews.length > 0) { %><span class="review-count">(<%= reviews.length %>)</span><% } %></h2>
               
               <% if (typeof currentUser !== 'undefined' && currentUser) { %>
                 <% const hasReviewed = reviews.some(r => r.user && r.user._id.toString() === currentUser._id.toString()); %>
                 <% if (!hasReviewed) { %>
                   <div class="review-form-card">
-                    <h3>Write a Review</h3>
+                    <h3 data-i18n="review.write">Write a Review</h3>
                     <form action="/listings/<%= listing._id %>/reviews" method="POST" class="review-form">
                       <div class="star-rating-input">
                         <input type="radio" id="star5" name="rating" value="5"><label for="star5"><i class="fas fa-star"></i></label>
@@ -128,17 +128,35 @@
                         <input type="radio" id="star2" name="rating" value="2"><label for="star2"><i class="fas fa-star"></i></label>
                         <input type="radio" id="star1" name="rating" value="1"><label for="star1"><i class="fas fa-star"></i></label>
                       </div>
-                      <textarea name="comment" placeholder="Share your experience..." required maxlength="1000" rows="3"></textarea>
-                      <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Submit Review</button>
+                      <textarea name="comment" data-i18n="review.shareExperience" placeholder="Share your experience..." required maxlength="1000" rows="3"></textarea>
+                      
+                      <!-- Photo URL Inputs -->
+                      <div class="review-photos-input">
+                        <span class="add-photo-label"><i class="fas fa-camera"></i> <span data-i18n="review.photos">Add Photos (optional)</span></span>
+                        <div class="review-photo-url-row">
+                          <span class="photo-index">1</span>
+                          <input type="url" name="photos" placeholder="https://example.com/photo1.jpg" />
+                        </div>
+                        <div class="review-photo-url-row">
+                          <span class="photo-index">2</span>
+                          <input type="url" name="photos" placeholder="https://example.com/photo2.jpg" />
+                        </div>
+                        <div class="review-photo-url-row">
+                          <span class="photo-index">3</span>
+                          <input type="url" name="photos" placeholder="https://example.com/photo3.jpg" />
+                        </div>
+                      </div>
+
+                      <button type="submit" class="btn" data-i18n="review.submit"><i class="fas fa-paper-plane"></i> Submit Review</button>
                     </form>
                   </div>
                 <% } %>
               <% } else { %>
-                <p class="login-to-review"><a href="/login">Sign in</a> to leave a review</p>
+                <p class="login-to-review"><a href="/login" data-i18n="review.signIn">Sign in</a> <span data-i18n="review.toReview">to leave a review</span></p>
               <% } %>
 
               <% if (reviews.length === 0) { %>
-                <p class="no-reviews">No reviews yet. Be the first to review!</p>
+                <p class="no-reviews" data-i18n="review.noReviews">No reviews yet. Be the first to review!</p>
               <% } else { %>
                 <div class="reviews-list">
                   <% reviews.forEach(review => { %>
@@ -158,6 +176,20 @@
                         </div>
                       </div>
                       <p class="review-comment"><%= review.comment %></p>
+                      
+                      <!-- Review Photos Gallery -->
+                      <% if (review.photos && review.photos.length > 0) { %>
+                        <div class="review-photos-gallery">
+                          <% review.photos.forEach(photo => { %>
+                            <% if (photo.url) { %>
+                              <div class="review-photo-thumb" onclick="openLightbox('<%= photo.url %>')">
+                                <img src="<%= photo.url %>" alt="Review photo" loading="lazy" />
+                              </div>
+                            <% } %>
+                          <% }); %>
+                        </div>
+                      <% } %>
+
                       <% if (typeof currentUser !== 'undefined' && currentUser && review.user && currentUser._id.toString() === review.user._id.toString()) { %>
                         <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>/delete" method="POST" class="delete-review-form">
                           <button type="submit" class="btn-text-danger" onclick="return confirm('Delete your review?')">
@@ -189,7 +221,7 @@
           <div class="show-sidebar">
             <div class="booking-card">
               <div class="booking-price">
-                <span class="booking-amount">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %></span>
+                <span class="booking-amount" data-price="<%= listing.price || 0 %>" data-price-suffix="">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %></span>
                 <span class="booking-per">/ night</span>
               </div>
               
@@ -226,7 +258,7 @@
                     </div>
                   </div>
 
-                  <button type="submit" class="btn booking-btn" id="reserveBtn" <%= listing.available === false ? 'disabled' : '' %>>
+                  <button type="submit" class="btn booking-btn" id="reserveBtn" <%= listing.available === false ? 'disabled' : '' %> data-i18n="<%= listing.available !== false ? 'booking.reserve' : 'booking.notAvailable' %>">
                     <i class="fas fa-bolt"></i> <%= listing.available !== false ? 'Reserve Now' : 'Not Available' %>
                   </button>
                 </form>
@@ -262,12 +294,12 @@
                   </div>
                 </div>
 
-                <a href="/login" class="btn booking-btn" style="text-align:center;">
+                <a href="/login" class="btn booking-btn" style="text-align:center;" data-i18n="booking.signInToBook">
                   <i class="fas fa-sign-in-alt"></i> Sign In to Book
                 </a>
               <% } %>
 
-              <p class="booking-note">You won't be charged yet</p>
+              <p class="booking-note" data-i18n="booking.note">You won't be charged yet</p>
             </div>
 
             <!-- Share & Save -->

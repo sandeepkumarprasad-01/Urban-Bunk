@@ -54,7 +54,7 @@
                   <% } else { %>
                     <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60" alt="<%= listing.title %>">
                   <% } %>
-                  <div class="favorite-price">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
+                  <div class="favorite-price" data-price="<%= listing.price || 0 %>" data-price-suffix="/night">₹<%= listing.price ? listing.price.toLocaleString("en-IN") : 'N/A' %><span>/night</span></div>
                   <i class="far fa-heart favorite-icon" data-listing-id="<%= listing._id %>"></i>
                   <% if (listing.category) { %>
                     <span class="card-category-tag"><%= listing.category %></span>
